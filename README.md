@@ -13,7 +13,7 @@ Since this tool relys on protobuf to resolve proto file of Caffe, ONNX, TensorFl
 sudo apt install libprotobuf-dev protobuf-compiler
 ```
 
-* if use the Fedora/CentOS ,use follow command instead.
+- If use the Fedora/CentOS ,use follow command instead.
 ```
 sudo dnf install protobuf-devel
 sudo dnf install boost-devel glog-devel
