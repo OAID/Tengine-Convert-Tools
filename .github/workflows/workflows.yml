@@ -7,6 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - name: system-update
+      run: sudo apt-get update
+    - name: install-protobuf
+      run: sudo apt-get install libprotobuf-dev protobuf-compiler
     - name: configure
       run: mkdir build && cd build && cmake ..
     - name: build
