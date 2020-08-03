@@ -4,7 +4,7 @@ Tengine Convert Tool supports converting multi framworks' models into tmfile tha
 Since this tool relys on protobuf to resolve proto file of Caffe, ONNX, TensorFlow, TFLite and so on, it can only run under x86 Linux system.
 
 ## Install dependent libraries
-For loading caffe model or TensorFlow model
+For loading caffe model or TensorFlow model.
 ``` 
     sudo apt install libprotobuf-dev protobuf-compiler
 ```
@@ -24,7 +24,7 @@ For loading caffe model or TensorFlow model
 
 ## Exection File
 
-The exection should be under build/install/bin/ named as convert_tool
+The exection should be under build/install/bin/ named as convert_tool.
 
 ## Run Convert Tool
 
@@ -55,7 +55,7 @@ Note: The command examples are based on mobilenet model
 
 # How to add self define operator
 
-1. Adding operator's name defined file under operator/include directory that likes xxx.hpp and xxx_param.hpp (including operator's params)
-2. Adding operator's memory allocation (calculate the memory) under operator/operator directory
-3. Register operator in project operators' registery under operator/operator/plugin/init.cpp file
-4. After adding operator definition, you need to add operator into model serializers, these files are under tools directory. There are multiply framework model serializers, finding file name and .cpp file under that corresponding framwork folder. Following the other operator's definition in that .cpp file
+1. Adding operator's name defined file under operator/include directory that likes xxx.hpp and xxx_param.hpp (including operator's params);
+2. Adding operator's memory allocation (calculate the memory) under operator/operator directory;
+3. Register operator in project operators' registery under operator/operator/plugin/init.cpp file;
+4. After adding operator definition, you need to add operator into model serializers, these files are under tools directory. There are multiply framework model serializers, finding file name and .cpp file under that corresponding framwork folder. Following the other operator's definition in that .cpp file.
