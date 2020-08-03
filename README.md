@@ -8,7 +8,7 @@ Tengine Convert Tool supports converting multi framworks' models into tmfile tha
 Since this tool relys on protobuf to resolve proto file of Caffe, ONNX, TensorFlow, TFLite and so on, it can only run under x86 Linux system.
 
 ## Install dependent libraries
-For loading caffe model or TensorFlow model.
+- For loading caffe model or TensorFlow model.
 ``` 
 sudo apt install libprotobuf-dev protobuf-compiler
 ```
