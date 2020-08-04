@@ -19,7 +19,7 @@ endif()
 # project name
 project(tengine-serializer C CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED ON)
 
 # building flags
@@ -35,14 +35,15 @@ add_definitions(-fPIC)
 add_definitions(-O3)
 
 # paser options
-option(BUILD_CAFFE_SERIALIZER   "Caffe serializer"      ON)
-option(BUILD_ONNX_SERIALIZER    "ONNX serializer"       ON)
-option(BUILD_MXNET_SERIALIZER   "MXNet serializer"      ON)
-option(BUILD_DARKNET_SERIALIZER "Darknet serializer"    ON)
-option(BUILD_TF_SERIALIZER      "TensorFlow serializer" ON)
-option(BUILD_TFLITE_SERIALIZER  "TFLite serializer"     ON)
-option(BUILD_NCNN_SERIALIZER    "NCNN serializer"       ON)
-option(BUILD_TENGINE_SERIALIZER "Tengine serializer"    ON)
+option(BUILD_CAFFE_SERIALIZER       "Caffe serializer"          ON)
+option(BUILD_ONNX_SERIALIZER        "ONNX serializer"           ON)
+option(BUILD_MXNET_SERIALIZER       "MXNet serializer"          ON)
+option(BUILD_DARKNET_SERIALIZER     "Darknet serializer"        ON)
+option(BUILD_TF_SERIALIZER          "TensorFlow serializer"     ON)
+option(BUILD_TFLITE_SERIALIZER      "TFLite serializer"         ON)
+option(BUILD_NCNN_SERIALIZER        "NCNN serializer"           ON)
+option(BUILD_MEGENGINE_SERIALIZER   "MegEngine serializer"      OFF)
+option(BUILD_TENGINE_SERIALIZER     "Tengine serializer"        ON)
 
 # add all header file folder
 include_directories(include)
@@ -52,8 +53,6 @@ include_directories(driver/cpu)
 include_directories(executor/include)
 include_directories(executor/operator/include)
 include_directories(operator/include)
-include_directories(serializer/include)
-include_directories(serializer/include)
 include_directories(serializer/include)
 include_directories(serializer/include/tengine/v1)
 include_directories(serializer/include/tengine/v2)
