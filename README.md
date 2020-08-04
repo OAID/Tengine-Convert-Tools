@@ -21,9 +21,9 @@ sudo dnf install boost-devel glog-devel
 
 ## Build Convert Tool
 ``` shell
-mkdir build
+mkdir build && cd build
 cmake ..
-make -j4 && make install
+make -j`nproc` && make install
 ```
 
 ## Exection File
