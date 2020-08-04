@@ -173,14 +173,14 @@ list(APPEND FRAMEWORK_SERIALIZER_SRCS   ${HELPER_SERIALIZER_SRCS})
 
 
 add_executable(convert_tool ${FRAMEWORK_SERIALIZER_SRCS})
-target_link_libraries(convert_tool ${CMAKE_PROJECT_NAME} pthread dl m)
+target_link_libraries(tm_convert_tool ${CMAKE_PROJECT_NAME} pthread dl m)
 
 if(BUILD_CAFFE_SERIALIZER OR BUILD_ONNX_SERIALIZER OR BUILD_TF_SERIALIZER)
     if (Protobuf_LIBRARIES)
-        target_link_libraries(convert_tool ${Protobuf_LIBRARIES})
+        target_link_libraries(tm_convert_tool ${Protobuf_LIBRARIES})
     else()
         set(PROTOBUF_LIB_NAME Protobuf_LIBRARY_${CMAKE_BUILD_TYPE})
-        target_link_libraries(convert_tool ${PROTOBUF_LIB_NAME})
+        target_link_libraries(tm_convert_tool ${PROTOBUF_LIB_NAME})
     endif()
 endif()
 
