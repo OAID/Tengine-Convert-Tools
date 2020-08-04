@@ -121,7 +121,7 @@ tm_uoffset_t TmSerializer2::SaveTmTensor(void* const start_ptr, tm_uoffset_t* cu
     tm_tensor.type = tensor->GetType();
     tm_tensor.data_type = tensor->GetDataType();
     tm_tensor.layout = (tensor->GetShape()).GetDataLayout();
-    if (tm_tensor.layout != 0 && tm_tensor.layout != 1) // bias tensor has not set layout, so set nchw defaultly 
+    if (tm_tensor.layout != 0 && tm_tensor.layout != 1) // some tensor has not set layout, so set nchw defaultly 
         tm_tensor.layout = 0;
 
     bool tm_with_string = IsSaveString();
