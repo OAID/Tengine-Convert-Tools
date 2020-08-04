@@ -28,7 +28,7 @@ make -j4 && make install
 
 ## Exection File
 
-- The exection should be under `./build/install/bin/` named as convert_tool.
+- The exection should be under `./build/install/bin/` named as `tm_convert_tool`.
 
 ## Run Convert Tool
 
