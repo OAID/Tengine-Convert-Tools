@@ -115,11 +115,14 @@ tm_uoffset_t TmSerializer2::SaveTmTensor(void* const start_ptr, tm_uoffset_t* cu
                                          unsigned int tensor_id, unsigned int buffer_id)
 {
     TM2_Tensor tm_tensor;
+    memset(&tm_tensor, 0, sizeof(TM2_Tensor));
     tm_tensor.tensor_id = tensor_id;
     tm_tensor.buffer_id = buffer_id;
     tm_tensor.type = tensor->GetType();
     tm_tensor.data_type = tensor->GetDataType();
     tm_tensor.layout = (tensor->GetShape()).GetDataLayout();
+    if (tm_tensor.layout != 0 && tm_tensor.layout != 1) // bias tensor has not set layout, so set nchw defaultly 
+        tm_tensor.layout = 0;
 
     bool tm_with_string = IsSaveString();
 
@@ -127,6 +130,7 @@ tm_uoffset_t TmSerializer2::SaveTmTensor(void* const start_ptr, tm_uoffset_t* cu
     {
         std::string name = tensor->GetName();
         TM2_String tensor_name;
+        memset(&tensor_name, 0, sizeof(TM2_String));
         tensor_name.size = name.size() + 1;    // including trailing \0
         tensor_name.offset_data = WriteTmFileAlign1(start_ptr, cur_pos, name.c_str(), tensor_name.size);
         tm_tensor.offset_s_tname = WriteTmObject(start_ptr, cur_pos, &tensor_name, sizeof(TM2_String));
@@ -160,6 +164,7 @@ tm_uoffset_t TmSerializer2::SaveTmTensor(void* const start_ptr, tm_uoffset_t* cu
     {
         vector_size = sizeof(tm_size_t) + sizeof(tm_uoffset_t) * params->size();
         TM2_Vector_offsets* v_qtparams = ( TM2_Vector_offsets* )malloc(vector_size);
+        memset(v_qtparams, 0, vector_size);
         v_qtparams->v_num = params->size();
         for (unsigned int i = 0; i < v_qtparams->v_num; i++)
         {
@@ -168,7 +173,8 @@ tm_uoffset_t TmSerializer2::SaveTmTensor(void* const start_ptr, tm_uoffset_t* cu
 
             qtparam.zero_point = p.zero_point;
             qtparam.scale = p.scale;
-            qtparam.width = p.width;
+            // qtparam.width = p.width; // width has not set value 
+            qtparam.width = 0;
 
             v_qtparams->offsets[i] = WriteTmObject(start_ptr, cur_pos, &qtparam, sizeof(TM2_QuantParam));
         }
@@ -321,6 +327,7 @@ tm_uoffset_t TmSerializer2::SaveTmSubgraph(void* const start_ptr, tm_uoffset_t* 
     /* Write the nodes */
     size_t vector_size = sizeof(tm_size_t) + sizeof(tm_uoffset_t) * graph->seq_nodes.size();
     TM2_Vector_offsets* v_nodes = ( TM2_Vector_offsets* )malloc(vector_size);
+    memset(v_nodes, 0, vector_size);
     v_nodes->v_num = graph->seq_nodes.size();
     for (unsigned int i = 0; i < graph->seq_nodes.size(); i++)
     {
@@ -422,6 +429,7 @@ bool TmSerializer2::SaveModelIntoMem(void* start_ptr, Graph* graph, uint32_t* tm
 
     /* Define the TM2_Header object */
     TM2_Header header;
+    memset(&header, 0, sizeof(TM2_Header));
     header.ver_main = TM2_FILE_VER_MAIN;
     header.ver_sub = TM2_FILE_VER_SUB;
     header.ver_compile = TM2_FILE_VER_COMPILE;
