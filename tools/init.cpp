@@ -21,6 +21,9 @@
  * Copyright (c) 2017, Open AI Lab
  * Author: haitao@openailab.com
  */
+
+#include "config.hpp"
+
 #include <iostream>
 #include <functional>
 
@@ -35,7 +38,10 @@
 #include "src_tm_serializer.hpp"
 #include "ncnn_serializer.hpp"
 #include "darknet_serializer.hpp"
+
+#ifdef BUILD_MEGENGINE_SERIALIZER
 #include "megengine_serializer.hpp"
+#endif
 
 #include "logger.hpp"
 
@@ -48,7 +54,10 @@ extern bool TFSerializerRegisterOpLoader();
 extern bool NcnnSerializerRegisterOpLoader();
 extern bool DarkNetSerializerRegisterOpLoader();
 extern bool TFLiteSerializerRegisterOpLoader();
+
+#ifdef BUILD_MEGENGINE_SERIALIZER
 extern bool MegengineSerializerRegisterOpLoader();
+#endif
 
 bool TmSerializerInit(void);
 
@@ -120,12 +129,15 @@ int serializer_plugin_init(void)
 
     NcnnSerializerRegisterOpLoader();
 
+#ifdef BUILD_MEGENGINE_SERIALIZER
     // MegEngine
     factory->RegisterInterface<MegengineSerializer>("megengine");
     auto megengine_serializer = factory->Create("megengine");
 
     SerializerManager::SafeAdd("megengine", SerializerPtr(megengine_serializer));
+
     MegengineSerializerRegisterOpLoader();
+#endif
 
     TmSerializerInit();
 

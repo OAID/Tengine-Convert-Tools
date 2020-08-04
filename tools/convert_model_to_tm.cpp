@@ -21,9 +21,13 @@
  * Copyright (c) 2020, OPEN AI LAB
  * Author: bzhang@openailab.com
  */
+
+#include "config.hpp"
+
 #include <stdlib.h>
 #include <iostream>
 #include <unistd.h>
+
 #include "tengine_c_api.h"
 
 void show_usage()
@@ -82,15 +86,24 @@ int main(int argc, char* argv[])
             model_file_needed = true;
             input_file_number = 2;
         }
+#ifdef BUILD_MEGENGINE_SERIALIZER
         else if (file_format == "caffe_single" || file_format == "onnx" || file_format == "tensorflow" ||
                  file_format == "tflite" || file_format == "ncnn" || file_format == "megengine")
+#else
+        else if (file_format == "caffe_single" || file_format == "onnx" || file_format == "tensorflow" ||
+                 file_format == "tflite" || file_format == "ncnn")
+#endif
         {
             model_file_needed = true;
             input_file_number = 1;
         }
         else
         {
+#ifdef BUILD_MEGENGINE_SERIALIZER
             std::cout << "Allowed input file format: caffe, caffe_single, onnx, mxnet, tensorflow, darknet, ncnn, megengine\n";
+#else
+            std::cout << "Allowed input file format: caffe, caffe_single, onnx, mxnet, tensorflow, darknet, ncnn\n";
+#endif
             return -1;
         }
     }
