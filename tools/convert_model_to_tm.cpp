@@ -83,14 +83,14 @@ int main(int argc, char* argv[])
             input_file_number = 2;
         }
         else if (file_format == "caffe_single" || file_format == "onnx" || file_format == "tensorflow" ||
-                 file_format == "tflite" || file_format == "ncnn")
+                 file_format == "tflite" || file_format == "ncnn" || file_format == "megengine")
         {
             model_file_needed = true;
             input_file_number = 1;
         }
         else
         {
-            std::cout << "Allowed input file format: caffe, caffe_single, onnx, mxnet, tensorflow, darknet, ncnn\n";
+            std::cout << "Allowed input file format: caffe, caffe_single, onnx, mxnet, tensorflow, darknet, ncnn, megengine\n";
             return -1;
         }
     }
