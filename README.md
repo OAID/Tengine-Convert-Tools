@@ -1,6 +1,6 @@
 # Tengine Convert Tools
 
-[![GitHub license](http://OAID.github.io/pics/apache_2.0.svg)](./LICENSE) [![Build Status](https://img.shields.io/github/workflow/status/OAID/Tengine/Tengine-Lite-Actions/tengine-lite)](https://github.com/OAID/Tengine/actions?query=workflow%3ATengine-Lite-Actions) 
+[![GitHub license](http://OAID.github.io/pics/apache_2.0.svg)](./LICENSE) [![Build Status](https://img.shields.io/github/workflow/status/OAID/Tengine-Convert-Tools/Tengine-Convert-Tools-Actions)](https://github.com/OAID/Tengine-Convert-Tools/actions?query=workflow%3ATengine-Convert-Tools-Actions) 
 
 # Introduction
 
@@ -36,37 +36,37 @@ To run the convert tool, running as following command, Note: The command example
 
 - Caffe
 ```
-./install/bin/convert_tool -f caffe -p mobilenet_deploy.prototxt -m mobilenet.caffemodel -o mobilenet.tmfile
+./install/bin/tm_convert_tool -f caffe -p mobilenet_deploy.prototxt -m mobilenet.caffemodel -o mobilenet.tmfile
 ```
 
 - MxNet
 ```
-./install/bin/convert_tool -f mxnet -p mobilenet1_0-symbol.json -m mobilene1_0-0000.params -o mobileent.tmfile
+./install/bin/tm_convert_tool -f mxnet -p mobilenet1_0-symbol.json -m mobilene1_0-0000.params -o mobileent.tmfile
 ```
 
 - ONNX
 ```
-./install/bin/convert_tool -f onnx -m mobilenet.onnx -o mobilenet.tmfile
+./install/bin/tm_convert_tool -f onnx -m mobilenet.onnx -o mobilenet.tmfile
 ```
 
 - TensorFlow
 ```
-./install/bin/convert_tool -f tensorflow -m mobielenet_v1_1.0_224_frozen.pb -o mobilenet.tmfile
+./install/bin/tm_convert_tool -f tensorflow -m mobielenet_v1_1.0_224_frozen.pb -o mobilenet.tmfile
 ```
 
 - TFLITE
 ```
-./install/bin/convert_tool -f tflite -m mobielenet.tflite -o mobilenet.tmfile
+./install/bin/tm_convert_tool -f tflite -m mobielenet.tflite -o mobilenet.tmfile
 ```
 
 - DarkNet: darknet only support for yolov3 model
 ```
-./install/bin/convert_tool -f darknet -p yolov3.cfg -m yolov3.weights -o yolov3.tmfile
+./install/bin/tm_convert_tool -f darknet -p yolov3.cfg -m yolov3.weights -o yolov3.tmfile
 ```
 
 - NCNN
 ```
-./install/bin/convert_tool -f ncnn -p mobilenet.params -m mobilenet.bin -o mobilenet.tmfile`
+./install/bin/tm_convert_tool -f ncnn -p mobilenet.params -m mobilenet.bin -o mobilenet.tmfile`
 ```
 
 ## How to add self define operator
