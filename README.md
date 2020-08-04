@@ -21,7 +21,7 @@ sudo dnf install boost-devel glog-devel
 
 ## Build Convert Tool
 ```
-mkdir build
+mkdir build && cd build
 cmake ..
 make -j4 && make install
 ```
