@@ -35,6 +35,7 @@
 #include "src_tm_serializer.hpp"
 #include "ncnn_serializer.hpp"
 #include "darknet_serializer.hpp"
+#include "megengine_serializer.hpp"
 
 #include "logger.hpp"
 
@@ -47,6 +48,7 @@ extern bool TFSerializerRegisterOpLoader();
 extern bool NcnnSerializerRegisterOpLoader();
 extern bool DarkNetSerializerRegisterOpLoader();
 extern bool TFLiteSerializerRegisterOpLoader();
+extern bool MegengineSerializerRegisterOpLoader();
 
 bool TmSerializerInit(void);
 
@@ -117,6 +119,13 @@ int serializer_plugin_init(void)
     SerializerManager::SafeAdd("ncnn", SerializerPtr(ncnn_serializer));
 
     NcnnSerializerRegisterOpLoader();
+
+    // MegEngine
+    factory->RegisterInterface<MegengineSerializer>("megengine");
+    auto megengine_serializer = factory->Create("megengine");
+
+    SerializerManager::SafeAdd("megengine", SerializerPtr(megengine_serializer));
+    MegengineSerializerRegisterOpLoader();
 
     TmSerializerInit();
 
