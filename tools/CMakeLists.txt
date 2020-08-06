@@ -1,7 +1,10 @@
+CONFIGURE_FILE (config.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/config.hpp)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/tflite)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/tflite/flatbuffers)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/helper)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 # add protobuf
@@ -144,6 +147,25 @@ endif()
 
 
 
+# MegEngine SERIALIZER
+if(BUILD_MEGENGINE_SERIALIZER)
+    if(NOT MEGENGINE_INSTALL_PATH)
+        message(FATAL_ERROR "FATAL: If MegEngine model support was ENABLED, -DMEGENGINE_INSTALL_PATH must be set.")
+    endif()
+
+    include_directories(${MEGENGINE_INSTALL_PATH}/include)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/megengine)
+
+    find_library(MEGENGINE_LIB NAMES megengine dnnl flatbuffers PATHS ${MEGENGINE_INSTALL_PATH}/lib)
+    find_library(DNNL_LIB NAMES dnnl PATHS ${MEGENGINE_INSTALL_PATH}/lib)
+    find_library(FLATBUFFERS_LIB NAMES flatbuffers PATHS ${MEGENGINE_INSTALL_PATH}/lib)
+
+    FILE(GLOB_RECURSE MEGENGINE_SERIALIZER_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/megengine/*.cpp")
+    #message("MegEngine serializer src: ${MEGENGINE_SERIALIZER_SRCS}")
+endif()
+
+
+
 if(BUILD_TENGINE_SERIALIZER)
     FILE(GLOB_RECURSE TENGINE_SERIALIZER_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/tengine/*.cpp")
     #message("Tengine serializer src: ${TENGINE_SERIALIZER_SRCS}")
@@ -151,12 +173,7 @@ endif()
 
 
 # add convert tool files
-FILE(GLOB_RECURSE MAIN_SERIALIZER_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-
-
-# add convert tool helper files
-FILE(GLOB_RECURSE HELPER_SERIALIZER_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/helper.cpp")
-
+FILE(GLOB MAIN_SERIALIZER_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 
 # collection all serializer source files
@@ -169,7 +186,10 @@ list(APPEND FRAMEWORK_SERIALIZER_SRCS   ${TFLITE_SERIALIZER_SRCS})
 list(APPEND FRAMEWORK_SERIALIZER_SRCS   ${NCNN_SERIALIZER_SRCS})
 list(APPEND FRAMEWORK_SERIALIZER_SRCS   ${TENGINE_SERIALIZER_SRCS})
 list(APPEND FRAMEWORK_SERIALIZER_SRCS   ${MAIN_SERIALIZER_SRCS})
-list(APPEND FRAMEWORK_SERIALIZER_SRCS   ${HELPER_SERIALIZER_SRCS})
+
+if(BUILD_MEGENGINE_SERIALIZER)
+    list(APPEND FRAMEWORK_SERIALIZER_SRCS   ${MEGENGINE_SERIALIZER_SRCS})
+endif()
 
 
 add_executable(tm_convert_tool ${FRAMEWORK_SERIALIZER_SRCS})
@@ -182,6 +202,10 @@ if(BUILD_CAFFE_SERIALIZER OR BUILD_ONNX_SERIALIZER OR BUILD_TF_SERIALIZER)
         set(PROTOBUF_LIB_NAME Protobuf_LIBRARY_${CMAKE_BUILD_TYPE})
         target_link_libraries(tm_convert_tool ${PROTOBUF_LIB_NAME})
     endif()
+endif()
+
+if(BUILD_MEGENGINE_SERIALIZER)
+    target_link_libraries(tm_convert_tool ${MEGENGINE_LIB} ${DNNL_LIB} ${FLATBUFFERS_LIB})
 endif()
 
 install (TARGETS tm_convert_tool DESTINATION bin)
