@@ -112,7 +112,7 @@ make -j`nproc`
 make install
 ```
 
-- Serialize yout MegEngine model
+- Serialize your MegEngine model
 
 ``` python
 # get a pre-trained resnet18 model from MegEngine Model Hub
