@@ -161,6 +161,6 @@ A jupyter notebook was offered for users, check [MegEngine.ipynb](https://github
 
 ## Tech Forum
 - Github issues
-- QQ groupchat: 829565581 (Answer: openailab)
+- QQ groupchat: 829565581
 - Email: Support@openailab.com
 - Tengine Community: http://www.tengine.org.cn/
