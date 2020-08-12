@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        if (file_format == "caffe" || file_format == "mxnet" || file_format == "darknet")
+        if (file_format == "caffe" || file_format == "mxnet" || file_format == "darknet" || file_format == "ncnn")
         {
             proto_file_needed = true;
             model_file_needed = true;
@@ -88,10 +88,10 @@ int main(int argc, char* argv[])
         }
 #ifdef BUILD_MEGENGINE_SERIALIZER
         else if (file_format == "caffe_single" || file_format == "onnx" || file_format == "tensorflow" ||
-                 file_format == "tflite" || file_format == "ncnn" || file_format == "megengine")
+                 file_format == "tflite" || file_format == "megengine")
 #else
         else if (file_format == "caffe_single" || file_format == "onnx" || file_format == "tensorflow" ||
-                 file_format == "tflite" || file_format == "ncnn")
+                 file_format == "tflite")
 #endif
         {
             model_file_needed = true;

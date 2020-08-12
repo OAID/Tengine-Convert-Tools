@@ -203,8 +203,8 @@ tm_uoffset_t TmSerializer2::SaveTmNode(void* const start_ptr, tm_uoffset_t* cur_
     {
         std::string name = node->GetName();
         TM2_String node_name;
-        // node_name.size = name.size() + 1;    // including trailing \0
-        node_name.offset_data = WriteTmFileAlign1(start_ptr, cur_pos, "", sizeof(""));
+        node_name.size = name.size() + 1;    // including trailing \0
+        node_name.offset_data = WriteTmFileAlign1(start_ptr, cur_pos, name.c_str(), node_name.size);
         tm_node.offset_s_nname = WriteTmObject(start_ptr, cur_pos, &node_name, sizeof(TM2_String));
     }
     else
