@@ -163,7 +163,7 @@ void Slice::SetSchema(void)
         .SetAttr("iscaffe", false)
         .SetAttr("ismxnet", false)
         .SetAttr("isonnx", false)
-	.SetAttr("isncnn", false)
+        .SetAttr("isncnn", false)
         .SetDoc(R"DOC(Slice Operator)DOC");
 }
 
