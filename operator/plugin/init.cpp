@@ -241,6 +241,7 @@ int operator_plugin_init(void)
     RegisterOp<Scatter>("Scatter");
     RegisterOp<Shape>("Shape");
     RegisterOp<Where>("Where");
+    RegisterOp<ReduceL2>("ReduceL2");
     // std::cout<<"OPERATOR PLUGIN INITED\n";
     return 0;
 }

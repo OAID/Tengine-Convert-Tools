@@ -120,6 +120,25 @@ bool Slice::InferShape(const std::vector<TEngine::TShape>& ishape, std::vector<T
         oshape[0].SetDim(out_dim);
         oshape[0].SetDataLayout(input.GetDataLayout());
     }
+    else if(param_.isncnn){
+        const TShape& input = ishape[0];
+        std::vector<int> input_dim = input.GetDim();
+        int axis = param_.axis;
+        int prev = 0;
+        for(int i = 0; i < oshape.size(); i++)
+        {
+            int slice = param_.slice_point_[i];
+            std::vector<int> output_dim = input_dim;
+            if(slice == -233)
+            {
+                slice = static_cast<int>((input_dim[axis]-prev) / (oshape.size() - i));
+            }
+            output_dim[axis] = slice;
+            oshape[i].SetDim(output_dim);
+            oshape[i].SetDataLayout(input.GetDataLayout());
+            prev += slice;
+        }
+    }    
     else
     {
         std::vector<int> out_dim;
@@ -144,6 +163,7 @@ void Slice::SetSchema(void)
         .SetAttr("iscaffe", false)
         .SetAttr("ismxnet", false)
         .SetAttr("isonnx", false)
+        .SetAttr("isncnn", false)
         .SetDoc(R"DOC(Slice Operator)DOC");
 }
 

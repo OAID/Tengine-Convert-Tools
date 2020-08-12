@@ -203,8 +203,8 @@ tm_uoffset_t TmSerializer2::SaveTmNode(void* const start_ptr, tm_uoffset_t* cur_
     {
         std::string name = node->GetName();
         TM2_String node_name;
-        // node_name.size = name.size() + 1;    // including trailing \0
-        node_name.offset_data = WriteTmFileAlign1(start_ptr, cur_pos, "", sizeof(""));
+        node_name.size = name.size() + 1;    // including trailing \0
+        node_name.offset_data = WriteTmFileAlign1(start_ptr, cur_pos, name.c_str(), node_name.size);
         tm_node.offset_s_nname = WriteTmObject(start_ptr, cur_pos, &node_name, sizeof(TM2_String));
     }
     else
@@ -436,6 +436,7 @@ bool TmSerializer2::SaveModelIntoMem(void* start_ptr, Graph* graph, uint32_t* tm
 
     /* Define the TM2_Model object */
     TM2_Model tm_model;
+    memset(&tm_model, 0, sizeof(TM2_Model));
     tm_model.orig_format = graph->GetModelFormat();
     tm_model.sub_format = 0;
 
@@ -443,8 +444,9 @@ bool TmSerializer2::SaveModelIntoMem(void* start_ptr, Graph* graph, uint32_t* tm
     {
         const std::string& fname = graph->GetName();
         TM2_String model_name;
-        model_name.size = fname.size() + 1;    // including trailing \0
-        model_name.offset_data = WriteTmFileAlign1(start_ptr, &cur_pos, fname.c_str(), model_name.size);
+        //model_name.size = fname.size() + 1;    // including trailing \0
+	model_name.size = 0;
+        model_name.offset_data = WriteTmFileAlign1(start_ptr, &cur_pos, "", sizeof(""));
         tm_model.offset_s_mname = WriteTmObject(start_ptr, &cur_pos, &model_name, sizeof(TM2_String));
     }
     else

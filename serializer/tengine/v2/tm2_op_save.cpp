@@ -32,7 +32,11 @@ namespace TMSerializer2 {
 
 inline void SetTmOperator(TM2_Operator* tm_op, const uint32_t op_type, const tm_uoffset_t offset)
 {
-    tm_op->op_ver = TM2_OP_VER;
+    if(tm_op->op_ver == 0){
+        tm_op->op_ver = TM2_OP_VER;
+    } else {
+        tm_op->op_ver = 2;
+    }
     tm_op->operator_type = op_type;
     tm_op->offset_t_param = offset;
 }
@@ -452,6 +456,7 @@ tm_uoffset_t SaveTmReshapeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Opera
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
+    tm_op.op_ver = 2;
     SetTmOperator(&tm_op, TM2_OPTYPE_RESHAPE, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ReshapeParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
@@ -1402,6 +1407,7 @@ tm_uoffset_t SaveTmTransposeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Ope
     }
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
+    tm_op.op_ver = 2;
     SetTmOperator(&tm_op, TM2_OPTYPE_TRANSPOSE,
                   WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_TransposeParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));

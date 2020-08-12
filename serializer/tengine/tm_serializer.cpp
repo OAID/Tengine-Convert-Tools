@@ -39,7 +39,6 @@ namespace TEngine {
 // template SpecificFactory<TmSerializer> SpecificFactory<TmSerializer>::instance;
 template class SpecificFactory<TmSerializer>;
 
-extern bool register_tm1_serializer();
 extern bool register_tm2_serializer();
 
 bool TmSerializer::SaveModel(const std::vector<std::string>& file_list, Graph* graph)
@@ -173,16 +172,8 @@ bool TmSerializer::LoadModel(const std::vector<const void*>& addr_list, const st
     SetGraphSource(graph, "in_mem");
     SetGraphSourceFormat(graph, "tengine");
 
-    const uint16_t* ver_main = reinterpret_cast<const uint16_t*>(mmap_buf);
     TmSerializerPtr tm_serializer;
-    if (*ver_main < 2)
-    {
-        LOG_WARN()
-            << "The input tengine model file is in old format, please regenerate it by using tengine convert tool.\n";
-        TmSerializerManager::SafeGet("tm_v1", tm_serializer);
-    }
-    else
-        TmSerializerManager::SafeGet("tm_v2", tm_serializer);
+    TmSerializerManager::SafeGet("tm_v2", tm_serializer);
 
     bool ret = tm_serializer->LoadModelFromMem(mmap_buf, graph);
 
@@ -200,10 +191,9 @@ bool TmSerializerInit(void)
 
     SerializerManager::SafeAdd("tengine", SerializerPtr(tm_serializer));
 
-    bool ret1 = register_tm1_serializer();
     bool ret2 = register_tm2_serializer();
 
-    return (ret1 && ret2);
+    return (ret2);
 }
 
 }    // namespace TEngine
