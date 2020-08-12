@@ -39,7 +39,6 @@ namespace TEngine {
 // template SpecificFactory<TmSerializer> SpecificFactory<TmSerializer>::instance;
 template class SpecificFactory<TmSerializer>;
 
-extern bool register_tm1_serializer();
 extern bool register_tm2_serializer();
 
 bool TmSerializer::SaveModel(const std::vector<std::string>& file_list, Graph* graph)
