@@ -132,6 +132,7 @@ protected:
     std::string format_name_;
     op_load_map_t op_load_map_;
     op_save_map_t op_save_map_;
+    std::unordered_map<std::string, int> node_name;
 };
 
 using SerializerPtr = std::shared_ptr<Serializer>;
