@@ -132,6 +132,8 @@ protected:
     std::string format_name_;
     op_load_map_t op_load_map_;
     op_save_map_t op_save_map_;
+    std::vector<std::string> unsupport_op;
+    std::vector<std::string> support_op;
 };
 
 using SerializerPtr = std::shared_ptr<Serializer>;

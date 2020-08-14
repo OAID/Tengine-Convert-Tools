@@ -1787,7 +1787,31 @@ bool TFSerializer::GenerateStaticGraph(TFGraph& tf_graph, StaticGraph* graph)
         LOG_ERROR() << "}\n";
         return false;
     }
+   for(int i = 0; i < node_number; i++){
+        TFNode* tf_node = tf_graph.seq_nodes[i];
+        if(tf_node->op == "null")
+            continue; 
 
+        std::vector<std::string>::iterator iter=std::find(support_op.begin(), support_op.end(), tf_node->op);
+        if(iter==support_op.end()){
+            std::vector<std::string>::iterator uniter=std::find(unsupport_op.begin(), unsupport_op.end(), tf_node->op);
+            if(uniter==unsupport_op.end()){
+                unsupport_op.push_back(tf_node->op);
+            } else {
+                continue;
+            }
+        } else {
+            continue;
+        }
+    }
+    if(unsupport_op.size() != 0){
+        printf("These ops are not in tensorflow serializer: \n");
+        for(int i = 0; i < (int)unsupport_op.size(); i++){
+            printf("[ %s ]\n", unsupport_op[i].c_str());
+        }
+        printf("\n");
+        return false;
+    }
     for (i = 0; i < node_number; i++)
     {
         TFNode* tf_node = tf_graph.seq_nodes[i];

@@ -666,7 +666,31 @@ bool MxnetSerializer::LoadGraph(StaticGraph* graph, const std::vector<MxnetNode>
         LOG_ERROR() << "}\n";
         return false;
     }
+    for(int i = 0; i < nodelist.size(); i++){
+        MxnetNode mxnet_node = nodelist.at(i);
+        if(mxnet_node.op == "null" || mxnet_node.op == "_zeros")
+            continue; 
 
+        std::vector<std::string>::iterator iter=std::find(support_op.begin(), support_op.end(), mxnet_node.op);
+        if(iter==support_op.end()){
+            std::vector<std::string>::iterator uniter=std::find(unsupport_op.begin(), unsupport_op.end(), mxnet_node.op);
+            if(uniter==unsupport_op.end()){
+                unsupport_op.push_back(mxnet_node.op);
+            } else {
+                continue;
+            }
+        } else {
+            continue;
+        }
+    }
+    if(unsupport_op.size() != 0){
+        printf("These ops are not in mxnet serializer: \n");
+        for(int i = 0; i < (int)unsupport_op.size(); i++){
+            printf("[ %s ]\n", unsupport_op[i].c_str());
+        }
+        printf("\n");
+        return false;
+    }
     for (i = 0; i < nodelist.size(); i++)
     {
         MxnetNode mxnet_node = nodelist.at(i);

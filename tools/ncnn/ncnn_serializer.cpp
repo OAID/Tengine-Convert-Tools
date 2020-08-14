@@ -715,6 +715,31 @@ bool NcnnSerializer::LoadGraph(StaticGraph* graph, const std::vector<NcnnNode>& 
         LOG_ERROR() << "}\n";
         return false;
     }
+    for(int i = 0; i < nodelist.size(); i++){
+        NcnnNode ncnn_node = nodelist.at(i);
+        if(ncnn_node.op == "null" || ncnn_node.op == "_zeros")
+            continue; 
+
+        std::vector<std::string>::iterator iter=std::find(support_op.begin(), support_op.end(), ncnn_node.op);
+        if(iter==support_op.end()){
+            std::vector<std::string>::iterator uniter=std::find(unsupport_op.begin(), unsupport_op.end(), ncnn_node.op);
+            if(uniter==unsupport_op.end()){
+                unsupport_op.push_back(ncnn_node.op);
+            } else {
+                continue;
+            }
+        } else {
+            continue;
+        }
+    }
+    if(unsupport_op.size() != 0){
+        printf("These ops are not in ncnn serializer: \n");
+        for(int i = 0; i < (int)unsupport_op.size(); i++){
+            printf("[ %s ]\n", unsupport_op[i].c_str());
+        }
+        printf("\n");
+        return false;
+    }
     for (i = 0; i < nodelist.size(); i++)
     {
         NcnnNode ncnn_node = nodelist.at(i);
