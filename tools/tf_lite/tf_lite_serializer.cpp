@@ -466,7 +466,31 @@ bool TFLiteSerializer::GenerateStaticGraph(LiteGraph* lite_graph, StaticGraph* g
         LOG_ERROR() << "}\n";
         return false;
     }
+    for(int i = 0; i < node_number; i++){
+        LiteNode* node = lite_graph->seq_nodes.at(i);
+        if(node->op == "null" || node->op == "_zeros")
+            continue; 
 
+        std::vector<std::string>::iterator iter=std::find(support_op.begin(), support_op.end(), node->op);
+        if(iter==support_op.end()){
+            std::vector<std::string>::iterator uniter=std::find(unsupport_op.begin(), unsupport_op.end(), node->op);
+            if(uniter==unsupport_op.end()){
+                unsupport_op.push_back(node->op);
+            } else {
+                continue;
+            }
+        } else {
+            continue;
+        }
+    }
+    if(unsupport_op.size() != 0){
+        printf("These ops are not in tflite serializer: \n");
+        for(int i = 0; i < (int)unsupport_op.size(); i++){
+            printf("[ %s ]\n", unsupport_op[i].c_str());
+        }
+        printf("\n");
+        return false;
+    }
     for (int i = 0; i < node_number; i++)
     {
         LiteNode* node = lite_graph->seq_nodes.at(i);

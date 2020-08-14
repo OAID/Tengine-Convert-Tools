@@ -304,6 +304,32 @@ bool CaffeSingle::LoadGraph(te_caffe::NetParameter& caffe_net, StaticGraph* grap
         LOG_ERROR() << "}\n";
         return false;
     }
+    for(int i = 0; i < layer_num; i++){
+        const te_caffe::LayerParameter& layer_param = caffe_net.layer(i);
+        const std::string& caffe_op_name = layer_param.type();
+        if(caffe_op_name == "null")
+            continue; 
+
+        std::vector<std::string>::iterator iter=std::find(support_op.begin(), support_op.end(), caffe_op_name);
+        if(iter==support_op.end()){
+            std::vector<std::string>::iterator uniter=std::find(unsupport_op.begin(), unsupport_op.end(), caffe_op_name);
+            if(uniter==unsupport_op.end()){
+                unsupport_op.push_back(caffe_op_name);
+            } else {
+                continue;
+            }
+        } else {
+            continue;
+        }
+    }
+    if(unsupport_op.size() != 0){
+        printf("These ops are not in caffe serializer: \n");
+        for(int i = 0; i < (int)unsupport_op.size(); i++){
+            printf("[ %s ]\n", unsupport_op[i].c_str());
+        }
+        printf("\n");
+        return false;
+    }    
     for (i = 0; i < layer_num; i++)
     {
         const te_caffe::LayerParameter& layer_param = caffe_net.layer(i);
