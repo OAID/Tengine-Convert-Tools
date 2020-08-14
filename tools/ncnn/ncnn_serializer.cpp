@@ -738,6 +738,7 @@ bool NcnnSerializer::LoadGraph(StaticGraph* graph, const std::vector<NcnnNode>& 
             printf("[ %s ]\n", unsupport_op[i].c_str());
         }
         printf("\n");
+        printf("You may need use ncnn optimizer first\n");
         return false;
     }
     for (i = 0; i < nodelist.size(); i++)

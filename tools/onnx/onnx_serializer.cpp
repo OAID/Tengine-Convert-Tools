@@ -501,6 +501,7 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
             printf("[ %s ]\n", unsupport_op[i].c_str());
         }
         printf("\n");
+        printf("You may need use onnx simplifier first\n");
         return false;
     }
     for (i = 0; i < onnx_graph.node_size(); i++)
