@@ -410,6 +410,15 @@ tm_uoffset_t SaveTmRelu6Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
+//add for yolov4
+tm_uoffset_t SaveTmMishOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_MISH, TM2_NOT_SET);
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
+
 tm_uoffset_t SaveTmReorgOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
 {
     ReorgParam* p = (dynamic_cast<Reorg*>(op))->GetParam();
@@ -1876,6 +1885,9 @@ op_save_t SaveTmOpFunc(uint32_t op_type)
             return SaveTmWhereOp;
         case TM2_OPTYPE_TILE:
             return SaveTmTileOp;
+        //add for yolov4
+        case TM2_OPTYPE_MISH:
+            return SaveTmMishOp;
         default:
             LOG_ERROR() << "Operator #" << op_type << " not supported in tengine model yet\n";
             return nullptr;
