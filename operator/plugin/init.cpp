@@ -131,7 +131,6 @@
 #include "operator/scatter.hpp"
 #include "operator/shape.hpp"
 #include "operator/where.hpp"
-//add for yolov4
 #include "operator/mish.hpp"
 using namespace TEngine;
 

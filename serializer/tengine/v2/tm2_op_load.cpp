@@ -1604,7 +1604,6 @@ bool LoadTmTileOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, c
     return true;
 }
 
-//add for yolov4
 bool LoadTmMishOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
 {
     StaticOp* op = CreateStaticOp(graph, TM2_OPSTR_MISH);
@@ -1810,7 +1809,6 @@ op_load_t LoadTmOpFunc(uint32_t op_type)
             return LoadTmWhereOp;
         case TM2_OPTYPE_TILE:
             return LoadTmTileOp;
-        //add for yolov4
         case TM2_OPTYPE_MISH:
             return LoadTmMishOp;        
         default:
@@ -2031,7 +2029,6 @@ std::string GetOpStr(uint32_t op_type)
             return std::string(TM2_OPSTR_WHERE);
         case TM2_OPTYPE_TILE:
             return std::string(TM2_OPSTR_TILE);
-        //add for yolov4
         case TM2_OPTYPE_MISH:
             return std::string(TM2_OPSTR_MISH);
         default:

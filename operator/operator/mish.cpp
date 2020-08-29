@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2019, Open AI Lab
- * Author: zpluo@openailab.com
+ * Author: 942002795@qq.com
  */
 #include "operator/mish.hpp"
 

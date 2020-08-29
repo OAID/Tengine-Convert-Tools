@@ -410,7 +410,6 @@ tm_uoffset_t SaveTmRelu6Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
-//add for yolov4
 tm_uoffset_t SaveTmMishOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
 {
     TM2_Operator tm_op;
@@ -1885,7 +1884,6 @@ op_save_t SaveTmOpFunc(uint32_t op_type)
             return SaveTmWhereOp;
         case TM2_OPTYPE_TILE:
             return SaveTmTileOp;
-        //add for yolov4
         case TM2_OPTYPE_MISH:
             return SaveTmMishOp;
         default:
