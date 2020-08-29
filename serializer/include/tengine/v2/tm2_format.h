@@ -143,6 +143,7 @@ typedef uint8_t tm_bool_t; /* bool is 1-byte unsigned integer */
 #define TM2_OPSTR_SHAPE "Shape"
 #define TM2_OPSTR_WHERE "Where"
 #define TM2_OPSTR_TILE "Tile"
+#define TM2_OPSTR_MISH "Mish"
 /* Operator types */
 #define TM2_OPTYPE_ACCURACY 0 /* No Param                 */
 #define TM2_OPTYPE_BATCHNORMALIZATION 1 /* TM2_BatchNormParam       */
@@ -241,7 +242,8 @@ typedef uint8_t tm_bool_t; /* bool is 1-byte unsigned integer */
 #define TM2_OPTYPE_SHAPE 94
 #define TM2_OPTYPE_WHERE 95
 #define TM2_OPTYPE_TILE 96
-#define TM2_OPTYPE_NUM 97
+#define TM2_OPTYPE_MISH 97
+#define TM2_OPTYPE_NUM 98
 
 /* --------------------- -------- TM objects -------------------------------- */
 

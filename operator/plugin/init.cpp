@@ -131,6 +131,7 @@
 #include "operator/scatter.hpp"
 #include "operator/shape.hpp"
 #include "operator/where.hpp"
+#include "operator/mish.hpp"
 using namespace TEngine;
 
 int operator_plugin_init(void)
@@ -242,6 +243,8 @@ int operator_plugin_init(void)
     RegisterOp<Shape>("Shape");
     RegisterOp<Where>("Where");
     RegisterOp<ReduceL2>("ReduceL2");
+    //add for yolov4
+    RegisterOp<Mish>("Mish");
     // std::cout<<"OPERATOR PLUGIN INITED\n";
     return 0;
 }

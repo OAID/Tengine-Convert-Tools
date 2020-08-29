@@ -307,8 +307,25 @@ static bool LoadConv2D(StaticGraph* graph, StaticNode* node, std::vector<std::st
         // update the tensor name map;
         tensor_name_map[index] = relu_tensor_name;
     }
+    if (strcmp(activation_s, "mish") == 0)
+    {
+        std::string mish_name = "mish_" + std::to_string(index);
+        StaticNode* mish_node = CreateStaticNode(graph, mish_name);
+        StaticOp* mish_op = CreateStaticOp(graph, "Mish");
+        SetNodeOp(mish_node, mish_op);
+        AddNodeInputTensor(mish_node, out_tensor);
+        std::string mish_tensor_name = mish_name + "_0";
+        StaticTensor* mish_out_tensor = CreateStaticTensor(graph, mish_tensor_name);
+        SetTensorDataType(mish_out_tensor, DataType::GetTypeID("float32"));
+        SetTensorDim(mish_out_tensor, out_dims);
+        AddNodeOutputTensor(mish_node, mish_out_tensor);
+
+        // update the tensor name map;
+        tensor_name_map[index] = mish_tensor_name;
+    }
     return true;
 }
+
 
 static bool LoadShortCut(StaticGraph* graph, StaticNode* node, std::vector<std::string>& tensor_name_map, list* options,
                          int index, FILE* fp)
