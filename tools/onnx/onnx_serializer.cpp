@@ -72,6 +72,8 @@
 #include "operator/selu_param.hpp"
 #include "operator/hardsigmoid_param.hpp"
 #include "operator/tile_param.hpp"
+#include "operator/cast_param.hpp"
+#include "operator/depthtospace_param.hpp"
 
 #include "type_name.hpp"
 #include "compiler.hpp"
@@ -2546,7 +2548,38 @@ static bool LoadOnnxTile(StaticGraph* graph, StaticNode* node, const onnx::NodeP
 
     return true;
 }
+static bool LoadOnnxCast(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
+{
+    CastParam param = any_cast<CastParam>(OpManager::GetOpDefParam("Cast"));
+    for(int k = 0; k < onnx_node.attribute_size(); k++)
+    {
+        const onnx::AttributeProto& attr = onnx_node.attribute(k);
+        if(attr.name() == "to")
+            param.type_to = attr.i();
+    }
+    param.type_from = 1;
+    StaticOp* op = CreateStaticOp(graph, "Cast");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+}
 
+static bool LoadOnnxDepthToSpace(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
+{
+    DepthToSpaceParam param = any_cast<DepthToSpaceParam>(OpManager::GetOpDefParam("DepthToSpace"));
+    for(int k = 0; k < onnx_node.attribute_size(); k++){
+        const onnx::AttributeProto& attr = onnx_node.attribute(k);
+        if(attr.name() == "block_size"){
+            param.block_size = attr.i();
+        }
+    }
+
+    StaticOp* op = CreateStaticOp(graph, "DepthToSpace");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+
+    return true;
+}
 // To register all op loader...
 bool OnnxSerializerRegisterOpLoader(void)
 {
@@ -2633,6 +2666,8 @@ bool OnnxSerializerRegisterOpLoader(void)
     p_onnx->RegisterOpLoadMethod("Selu", op_load_t(LoadOnnxSelu));
     p_onnx->RegisterOpLoadMethod("HardSigmoid", op_load_t(LoadOnnxHardsigmoid));
     p_onnx->RegisterOpLoadMethod("Tile", op_load_t(LoadOnnxTile));
+    p_onnx->RegisterOpLoadMethod("Cast", op_load_t(LoadOnnxCast));
+    p_onnx->RegisterOpLoadMethod("DepthToSpace", op_load_t(LoadOnnxDepthToSpace));
     // p_onnx->RegisterOpLoadMethod("Constant", op_load_t(LoadOnnxConstant));
     return true;
 }

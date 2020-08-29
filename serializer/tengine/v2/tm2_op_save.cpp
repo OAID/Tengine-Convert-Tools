@@ -1456,7 +1456,7 @@ tm_uoffset_t SaveTmDepthToSpaceOp(void* const start_ptr, tm_uoffset_t* cur_pos, 
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_SPACETODEPTH,
+    SetTmOperator(&tm_op, TM2_OPTYPE_DEPTHTOSPACE,
                   WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_DepthToSpaceParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
