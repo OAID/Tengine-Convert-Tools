@@ -86,8 +86,8 @@ public:
     {
         if (op_load_map_.count(op_name))
             return false;
-
         op_load_map_[op_name] = load_func;
+        support_op.emplace_back(op_name);
         return true;
     }
 
