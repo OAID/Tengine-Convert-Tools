@@ -713,6 +713,7 @@ bool LoadTmLstmOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, c
     param.cellin_act = tm_param->cellin_act;
     param.cellout_act = tm_param->cellout_act;
     param.mxnet_flag = tm_param->mxnet_flag;
+    param.algorithm = tm_param->algorithm;
 
     StaticOp* op = CreateStaticOp(graph, op_str);
     SetOperatorParam(op, param);

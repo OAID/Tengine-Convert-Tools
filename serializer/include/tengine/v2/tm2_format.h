@@ -625,6 +625,7 @@ typedef struct
     int32_t cellin_act;
     int32_t cellout_act;
     int32_t mxnet_flag;
+    int32_t algorithm;
 } TM2_LstmParam;
 
 typedef struct
