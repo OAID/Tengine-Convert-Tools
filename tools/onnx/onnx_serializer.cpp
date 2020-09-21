@@ -74,6 +74,7 @@
 #include "operator/tile_param.hpp"
 #include "operator/cast_param.hpp"
 #include "operator/depthtospace_param.hpp"
+#include "operator/lstm_param.hpp"
 
 #include "type_name.hpp"
 #include "compiler.hpp"
@@ -569,7 +570,6 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
 static bool LoadOnnxConvolutionOp(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
     ConvParam param = any_cast<ConvParam>(OpManager::GetOpDefParam("Convolution"));
-
     for (int k = 0; k < onnx_node.attribute_size(); k++)
     {
         const onnx::AttributeProto& attr = onnx_node.attribute(k);
@@ -601,7 +601,7 @@ static bool LoadOnnxConvolutionOp(StaticGraph* graph, StaticNode* node, const on
             param.dilation_w = attr.ints(0);
         }
         else
-            LOG_ERROR() << "attr.name:" << attr.name() << "\n";
+            LOG_ERROR() << node->name << " attr.name:"<< attr.name() << "\n";
     }
 
     /* update the input tensor data layout */
@@ -2424,6 +2424,13 @@ static bool LoadOnnxDeConvOp(StaticGraph* graph, StaticNode* node, const onnx::N
             param.stride_h = attr.ints(0);
             param.stride_w = attr.ints(1);
         }
+        else if (attr.name() == "output_padding")
+        {
+            param.pad_h0 = attr.ints(0);
+            param.pad_h1 = attr.ints(0);
+            param.pad_w0 = attr.ints(1);
+            param.pad_w1 = attr.ints(1);
+        }
         else if (attr.name() == "pads")
         {
             param.pad_h0 = attr.ints(0);
@@ -2580,6 +2587,35 @@ static bool LoadOnnxDepthToSpace(StaticGraph* graph, StaticNode* node, const onn
 
     return true;
 }
+static bool LoadOnnxLstm(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
+{
+    LSTMParam param = any_cast<LSTMParam>(OpManager::GetOpDefParam("LSTM"));
+    int s_size;
+    std::string lstm_type;
+    for(int k = 0; k < onnx_node.attribute_size(); k++)
+    {
+        const onnx::AttributeProto& attr = onnx_node.attribute(k);
+        if(attr.name() == "hidden_size")
+            s_size = attr.i();
+        if(attr.name() == "direction")
+            lstm_type = attr.s();
+
+    }
+    if(lstm_type == "bidirectional"){
+        param.algorithm = 0;
+    } else {
+        param.algorithm = 0;
+    }
+    param.mxnet_flag = 0;
+    param.hidden_size = s_size;
+    param.cell_size = s_size;
+
+    StaticOp* op = CreateStaticOp(graph, "LSTM");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+
+    return true;
+}
 // To register all op loader...
 bool OnnxSerializerRegisterOpLoader(void)
 {
@@ -2668,6 +2704,7 @@ bool OnnxSerializerRegisterOpLoader(void)
     p_onnx->RegisterOpLoadMethod("Tile", op_load_t(LoadOnnxTile));
     p_onnx->RegisterOpLoadMethod("Cast", op_load_t(LoadOnnxCast));
     p_onnx->RegisterOpLoadMethod("DepthToSpace", op_load_t(LoadOnnxDepthToSpace));
+    p_onnx->RegisterOpLoadMethod("LSTM", op_load_t(LoadOnnxLstm));
     // p_onnx->RegisterOpLoadMethod("Constant", op_load_t(LoadOnnxConstant));
     return true;
 }

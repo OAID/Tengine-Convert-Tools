@@ -53,6 +53,7 @@ struct LSTMParam : public NamedParam
     int cellin_act;
     int cellout_act;
     int mxnet_flag;
+    int algorithm;
 
     DECLARE_PARSER_STRUCTURE(LSTMParam)
     {
@@ -74,6 +75,7 @@ struct LSTMParam : public NamedParam
         DECLARE_PARSER_ENTRY(output_act);
         DECLARE_PARSER_ENTRY(cellout_act);
         DECLARE_PARSER_ENTRY(mxnet_flag);
+        DECLARE_PARSER_ENTRY(algorithm);
     };
 };
 
