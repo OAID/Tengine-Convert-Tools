@@ -3,6 +3,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <math.h>
+#include <vector>
 #include "tengine_c_api.h"
 #include "exec_attr.hpp"
 #include "darknet_serializer.hpp"
@@ -20,6 +21,7 @@
 #include "operator/relu_param.hpp"
 #include "operator/reorg_param.hpp"
 #include "operator/region_param.hpp"
+#include "operator/slice_param.hpp"
 
 namespace TEngine {
 
@@ -438,40 +440,151 @@ static bool LoadYolo(StaticGraph* graph, StaticNode* node, std::vector<std::stri
 static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::string>& tensor_name_map, list* options,
                       int index, FILE* fp)
 {
-    char* l = option_find(options, ( char* )("layers"));
-    int len = strlen(l);
-    int n = 1;
-    for (int i = 0; i < len; ++i)
+    //check layers option
+    char* layers = option_find(options, ( char* )("layers"));
+    int layers_len = strlen(layers);
+    int n_layers = 1;
+    std::vector<int> layers_arr;
+    for (int i = 0; i < layers_len; ++i)
     {
-        if (l[i] == ',')
-            ++n;
+        if (layers[i] == ',')
+            ++n_layers;
     }
-    std::vector<int> input_dims;
-    int output_c = 0;
-    for (int i = 0; i < n; ++i)
+    for (int i = 0; i < n_layers; ++i)
     {
-        int from_index = atoi(l);
-        l = strchr(l, ',') + 1;
+        int from_index = atoi(layers);
+        layers = strchr(layers, ',') + 1;
         if (from_index < 0)
             from_index = index + from_index;
         else
             from_index = from_index + 1;
-        StaticTensor* tensor = FindTensor(graph, tensor_name_map[from_index]);
-        AddNodeInputTensor(node, tensor);
-        input_dims = GetTensorDim(tensor);
-        output_c += input_dims[1];
+        layers_arr.push_back(from_index);
     }
-    std::vector<int> out_dims;
-    out_dims.push_back(input_dims[0]);
-    out_dims.push_back(output_c);
-    out_dims.push_back(input_dims[2]);
-    out_dims.push_back(input_dims[3]);
-    StaticTensor* out_tensor = GetNodeOutputTensor(graph, node, 0);
-    SetTensorDim(out_tensor, out_dims);
-    StaticOp* op = CreateStaticOp(graph, "Concat");
+    //check groups option
+    char* groups = option_find(options, ( char* )("groups"));
+    int groups_len = strlen(groups);
+    int n_groups = 0;
+    std::vector<int> groups_arr;
+    if (groups_len > 0)
+    {
+        n_groups = 1;
+        for (int i = 0; i < groups_len; ++i)
+        {
+            if (groups[i] == ',')
+                ++n_groups;
+        }
+        for (int i = 0; i < n_groups; ++i)
+        {
+            int group_count = atoi(groups);
+            groups = strchr(groups, ',') + 1;
+            groups_arr.push_back(group_count);
+        }
+    }
+
+    //check group_id option
+    char* group_id = option_find(options, ( char* )("group_id"));
+    int group_id_len = strlen(group_id);
+    int n_group_id = 0;
+    std::vector<int> group_id_arr;
+    if(group_id_len > 0)
+    {
+        n_group_id = 1;
+        for (int i = 0; i < group_id_len; ++i)
+        {
+            if (group_id[i] == ',')
+                ++n_group_id;
+        }
+        for (int i = 0; i < n_group_id; ++i)
+        {
+            int group_index = atoi(group_id);
+            group_id = strchr(group_id, ',') + 1;
+            group_id_arr.push_back(group_index);
+        }
+    }
+
+
+    if (groups_arr.size() == 0)
+    {
+        for(int i = 0; i < group_id_arr.size(); i++)
+            groups_arr.push_back(1);
+    }
+    if (group_id_arr.size() == 0)
+    {
+        for(int i = 0; i < group_id_arr.size(); i++)
+            group_id_arr.push_back(1);
+    }
+    
+    //split if need
+    std::vector<bool> slice_flag;
+    std::vector<StaticNode*> slice_node_arr;
+    std::vector<StaticOp*> slice_op_arr;
+    std::vector<StaticTensor*> slice_out_tensor_arr;
+    std::vector<int> slice_outc_dim;
+    for (int i = 0; i < layers_arr.size(); i++)
+    {
+        std::string slice_name = "route_slice_" + std::to_string(index) + std::to_string(i);
+        int from_index = layers_arr[i];
+        if (groups_arr[i] == 1)
+        {
+            slice_flag.push_back(false);
+            slice_outc_dim.push_back(0);
+        }
+        else
+        {
+            StaticTensor* tensor = FindTensor(graph, tensor_name_map[from_index]);
+            std::vector<int> input_dims = GetTensorDim(tensor);
+            std::vector<int> out_dims = input_dims;
+            SliceParam param = any_cast<SliceParam>(OpManager::GetOpDefParam("Slice"));
+            param.iscaffe = true;
+            param.slice_point_.clear();
+            int step = input_dims[1] / groups_arr[i];
+            out_dims[1] = step;
+            slice_outc_dim.push_back(step);
+            for (int j = 0; j < groups_arr[i] - 1; j++)
+            {
+                param.slice_point_.push_back(step*(j + 1));
+            }
+            StaticNode* slice_node = CreateStaticNode(graph, slice_name);
+            StaticOp* slice_op = CreateStaticOp(graph, "Slice");
+            SetOperatorParam(slice_op, param);
+            SetNodeOp(slice_node, slice_op);
+            AddNodeInputTensor(slice_node, tensor);
+            std::string slice_tensor_name = slice_name + "_0";
+            StaticTensor* slice_out_tensor = CreateStaticTensor(graph, slice_tensor_name);
+            SetTensorDataType(slice_out_tensor, DataType::GetTypeID("float32"));
+            SetTensorDim(slice_out_tensor, out_dims);
+            AddNodeOutputTensor(slice_node, slice_out_tensor);
+            // tensor_name_map[index] = slice_tensor_name;
+            slice_node_arr.push_back(slice_node);
+            slice_op_arr.push_back(slice_op);
+        }
+    }
+    //concat if need
+    std::vector<int> input_dims;
+    StaticTensor* tensor = FindTensor(graph, tensor_name_map[layers_arr[0]]);
+    input_dims = GetTensorDim(tensor);
+    int output_c = 0;
+    for (int i = 0; i < layers_arr.size(); i++)
+    {
+        StaticNode* slice_node = slice_node_arr[i];
+        StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, group_id_arr[i]);
+        std::vector<int> slice_out_dims = GetTensorDim(slice_out_tensor);
+        output_c += slice_out_dims[1];
+        AddNodeInputTensor(node, slice_out_tensor);
+    }
+    std::string concat_name = "route_concat" + std::to_string(index);
+    std::string concat_tensor_name = concat_name + "_0";
+    std::vector<int> concat_out_dims;
+    concat_out_dims.push_back(input_dims[0]);
+    concat_out_dims.push_back(output_c);
+    concat_out_dims.push_back(input_dims[2]);
+    concat_out_dims.push_back(input_dims[3]);
+    StaticTensor* concat_out_tensor = GetNodeOutputTensor(graph, node, 0);
+    SetTensorDim(concat_out_tensor, concat_out_dims);
+    StaticOp* concat_op = CreateStaticOp(graph, "Concat");
     ConcatParam param = any_cast<ConcatParam>(OpManager::GetOpDefParam("Concat"));
-    SetOperatorParam(op, param);
-    SetNodeOp(node, op);
+    SetOperatorParam(concat_op, param);
+    SetNodeOp(node, concat_op);
 
     return true;
 }
