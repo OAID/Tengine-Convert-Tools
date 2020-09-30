@@ -519,9 +519,8 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
     //     printf("group_id_arr %d: %d\n", i, group_id_arr[i]);
     // }
     //split if need
-    std::vector<bool> slice_flag;
+    // std::vector<bool> slice_flag;
     std::vector<StaticNode*> slice_node_arr;
-    std::vector<StaticTensor*> slice_out_tensor_arr;
     for (int i = 0; i < layers_arr.size(); i++)
     {
         std::string slice_name = "route_slice_" + std::to_string(index) + std::to_string(i);
@@ -530,12 +529,12 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
         std::vector<int> input_dims = GetTensorDim(input_tensor);
         if (groups_arr[i] == 1)
         {
-            slice_flag.push_back(false);
+            // slice_flag.push_back(false);
             slice_node_arr.push_back((StaticNode*)nullptr);
         }
         else
         {
-            slice_flag.push_back(true);
+            // slice_flag.push_back(true);
             std::vector<int> out_dims = input_dims;
             SliceParam param = any_cast<SliceParam>(OpManager::GetOpDefParam("Slice"));
             param.iscaffe = true;
@@ -569,7 +568,7 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
     int output_c = 0;
     for (int i = 0; i < layers_arr.size(); i++)
     {
-        if(slice_flag[i] == true)
+        if(slice_node_arr[i] != nullptr)
         {
             StaticNode* slice_node = slice_node_arr[i];
             StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, group_id_arr[i]);
