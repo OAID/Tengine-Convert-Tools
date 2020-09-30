@@ -462,7 +462,7 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
     }
     //check groups option
     char* groups = option_find(options, ( char* )("groups"));
-    int groups_len = strlen(groups);
+    int groups_len = (groups != nullptr) ? strlen(groups) : 0;
     int n_groups = 0;
     std::vector<int> groups_arr;
     if (groups_len > 0)
@@ -483,7 +483,7 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
 
     //check group_id option
     char* group_id = option_find(options, ( char* )("group_id"));
-    int group_id_len = strlen(group_id);
+    int group_id_len = (group_id != nullptr) ? strlen(group_id) : 0;
     int n_group_id = 0;
     std::vector<int> group_id_arr;
     if(group_id_len > 0)
@@ -501,45 +501,47 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
             group_id_arr.push_back(group_index);
         }
     }
-
-
     if (groups_arr.size() == 0)
     {
-        for(int i = 0; i < group_id_arr.size(); i++)
+        for(int i = 0; i < layers_arr.size(); i++)
             groups_arr.push_back(1);
     }
     if (group_id_arr.size() == 0)
     {
-        for(int i = 0; i < group_id_arr.size(); i++)
-            group_id_arr.push_back(1);
+        for(int i = 0; i < layers_arr.size(); i++)
+            group_id_arr.push_back(0);
     }
-    
+    //debug print
+    for (int i = 0; i < layers_arr.size(); i++)
+    {
+        printf("layers %d: %d\n", i, layers_arr[i]);
+        printf("groups_arr %d: %d\n", i, groups_arr[i]);
+        printf("group_id_arr %d: %d\n", i, group_id_arr[i]);
+    }
     //split if need
     std::vector<bool> slice_flag;
     std::vector<StaticNode*> slice_node_arr;
-    std::vector<StaticOp*> slice_op_arr;
     std::vector<StaticTensor*> slice_out_tensor_arr;
-    std::vector<int> slice_outc_dim;
     for (int i = 0; i < layers_arr.size(); i++)
     {
         std::string slice_name = "route_slice_" + std::to_string(index) + std::to_string(i);
         int from_index = layers_arr[i];
+        StaticTensor* input_tensor = FindTensor(graph, tensor_name_map[from_index]);
+        std::vector<int> input_dims = GetTensorDim(input_tensor);
         if (groups_arr[i] == 1)
         {
             slice_flag.push_back(false);
-            slice_outc_dim.push_back(0);
+            slice_node_arr.push_back((StaticNode*)nullptr);
         }
         else
         {
-            StaticTensor* tensor = FindTensor(graph, tensor_name_map[from_index]);
-            std::vector<int> input_dims = GetTensorDim(tensor);
+            slice_flag.push_back(true);
             std::vector<int> out_dims = input_dims;
             SliceParam param = any_cast<SliceParam>(OpManager::GetOpDefParam("Slice"));
             param.iscaffe = true;
             param.slice_point_.clear();
             int step = input_dims[1] / groups_arr[i];
             out_dims[1] = step;
-            slice_outc_dim.push_back(step);
             for (int j = 0; j < groups_arr[i] - 1; j++)
             {
                 param.slice_point_.push_back(step*(j + 1));
@@ -548,30 +550,45 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
             StaticOp* slice_op = CreateStaticOp(graph, "Slice");
             SetOperatorParam(slice_op, param);
             SetNodeOp(slice_node, slice_op);
-            AddNodeInputTensor(slice_node, tensor);
-            std::string slice_tensor_name = slice_name + "_0";
-            StaticTensor* slice_out_tensor = CreateStaticTensor(graph, slice_tensor_name);
-            SetTensorDataType(slice_out_tensor, DataType::GetTypeID("float32"));
-            SetTensorDim(slice_out_tensor, out_dims);
-            AddNodeOutputTensor(slice_node, slice_out_tensor);
-            // tensor_name_map[index] = slice_tensor_name;
+            AddNodeInputTensor(slice_node, input_tensor);
+            for (int k = 0; k < groups_arr[i]; k++)
+            {
+                std::string slice_tensor_name = slice_name + "_" + std::to_string(k);
+                StaticTensor* slice_out_tensor = CreateStaticTensor(graph, slice_tensor_name);
+                SetTensorDataType(slice_out_tensor, DataType::GetTypeID("float32"));
+                SetTensorDim(slice_out_tensor, out_dims);
+                AddNodeOutputTensor(slice_node, slice_out_tensor);
+            }
             slice_node_arr.push_back(slice_node);
-            slice_op_arr.push_back(slice_op);
+            //debug print
+            for(int it = 0; it < param.slice_point_.size(); it++)
+                printf("param slice_point %d : %d\n", it, param.slice_point_[it]);
         }
     }
-    //concat if need
-    std::vector<int> input_dims;
-    StaticTensor* tensor = FindTensor(graph, tensor_name_map[layers_arr[0]]);
-    input_dims = GetTensorDim(tensor);
+    //concat
     int output_c = 0;
     for (int i = 0; i < layers_arr.size(); i++)
     {
-        StaticNode* slice_node = slice_node_arr[i];
-        StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, group_id_arr[i]);
-        std::vector<int> slice_out_dims = GetTensorDim(slice_out_tensor);
-        output_c += slice_out_dims[1];
-        AddNodeInputTensor(node, slice_out_tensor);
+        if(slice_flag[i] == true)
+        {
+            StaticNode* slice_node = slice_node_arr[i];
+            StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, group_id_arr[i]);
+            std::vector<int> slice_out_dims = GetTensorDim(slice_out_tensor);
+            output_c += slice_out_dims[1];
+            AddNodeInputTensor(node, slice_out_tensor);
+        }
+        else
+        {
+            int from_index = layers_arr[i];
+            StaticTensor* tensor = FindTensor(graph, tensor_name_map[from_index]);
+            std::vector<int> input_dims = GetTensorDim(tensor);
+            output_c += input_dims[1];
+            AddNodeInputTensor(node, tensor);
+        }
     }
+    std::vector<int> input_dims;
+    StaticTensor* tensor = FindTensor(graph, tensor_name_map[layers_arr[0]]);
+    input_dims = GetTensorDim(tensor);
     std::string concat_name = "route_concat" + std::to_string(index);
     std::string concat_tensor_name = concat_name + "_0";
     std::vector<int> concat_out_dims;
