@@ -512,12 +512,12 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
             group_id_arr.push_back(0);
     }
     //debug print
-    for (int i = 0; i < layers_arr.size(); i++)
-    {
-        printf("layers %d: %d\n", i, layers_arr[i]);
-        printf("groups_arr %d: %d\n", i, groups_arr[i]);
-        printf("group_id_arr %d: %d\n", i, group_id_arr[i]);
-    }
+    // for (int i = 0; i < layers_arr.size(); i++)
+    // {
+    //     printf("layers %d: %d\n", i, layers_arr[i]);
+    //     printf("groups_arr %d: %d\n", i, groups_arr[i]);
+    //     printf("group_id_arr %d: %d\n", i, group_id_arr[i]);
+    // }
     //split if need
     std::vector<bool> slice_flag;
     std::vector<StaticNode*> slice_node_arr;
@@ -561,8 +561,8 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
             }
             slice_node_arr.push_back(slice_node);
             //debug print
-            for(int it = 0; it < param.slice_point_.size(); it++)
-                printf("param slice_point %d : %d\n", it, param.slice_point_[it]);
+            // for(int it = 0; it < param.slice_point_.size(); it++)
+            //     printf("param slice_point %d : %d\n", it, param.slice_point_[it]);
         }
     }
     //concat
