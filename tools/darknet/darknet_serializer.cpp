@@ -536,28 +536,30 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
         {
             // slice_flag.push_back(true);
             std::vector<int> out_dims = input_dims;
-            SliceParam param = any_cast<SliceParam>(OpManager::GetOpDefParam("Slice"));
-            param.iscaffe = true;
-            param.slice_point_.clear();
             int step = input_dims[1] / groups_arr[i];
-            out_dims[1] = step;
-            for (int j = 0; j < groups_arr[i] - 1; j++)
-            {
-                param.slice_point_.push_back(step*(j + 1));
-            }
+            out_dims[1] = step;            
+            SliceParam param = any_cast<SliceParam>(OpManager::GetOpDefParam("Slice"));
+            // param.iscaffe = true;
+            param.axis = 1;
+            param.isonnx = true;
+            param.slice_point_.clear();
+            param.begin = step * group_id_arr[i];
+            param.end = step * (group_id_arr[i] + 1);
+            // for (int j = 0; j < groups_arr[i] - 1; j++)
+            // {
+            //     param.slice_point_.push_back(step*(j + 1));
+            // }
             StaticNode* slice_node = CreateStaticNode(graph, slice_name);
             StaticOp* slice_op = CreateStaticOp(graph, "Slice");
             SetOperatorParam(slice_op, param);
             SetNodeOp(slice_node, slice_op);
             AddNodeInputTensor(slice_node, input_tensor);
-            for (int k = 0; k < groups_arr[i]; k++)
-            {
-                std::string slice_tensor_name = slice_name + "_" + std::to_string(k);
-                StaticTensor* slice_out_tensor = CreateStaticTensor(graph, slice_tensor_name);
-                SetTensorDataType(slice_out_tensor, DataType::GetTypeID("float32"));
-                SetTensorDim(slice_out_tensor, out_dims);
-                AddNodeOutputTensor(slice_node, slice_out_tensor);
-            }
+            
+            std::string slice_tensor_name = slice_name + "_" + std::to_string(0);
+            StaticTensor* slice_out_tensor = CreateStaticTensor(graph, slice_tensor_name);
+            SetTensorDataType(slice_out_tensor, DataType::GetTypeID("float32"));
+            SetTensorDim(slice_out_tensor, out_dims);
+            AddNodeOutputTensor(slice_node, slice_out_tensor);
             slice_node_arr.push_back(slice_node);
             //debug print
             // for(int it = 0; it < param.slice_point_.size(); it++)
@@ -571,7 +573,8 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
         if(slice_node_arr[i] != nullptr)
         {
             StaticNode* slice_node = slice_node_arr[i];
-            StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, group_id_arr[i]);
+            // StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, group_id_arr[i]);
+            StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, 0);
             std::vector<int> slice_out_dims = GetTensorDim(slice_out_tensor);
             output_c += slice_out_dims[1];
             AddNodeInputTensor(node, slice_out_tensor);
