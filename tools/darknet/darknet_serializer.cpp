@@ -511,15 +511,7 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
         for(int i = 0; i < layers_arr.size(); i++)
             group_id_arr.push_back(0);
     }
-    //debug print
-    // for (int i = 0; i < layers_arr.size(); i++)
-    // {
-    //     printf("layers %d: %d\n", i, layers_arr[i]);
-    //     printf("groups_arr %d: %d\n", i, groups_arr[i]);
-    //     printf("group_id_arr %d: %d\n", i, group_id_arr[i]);
-    // }
     //split if need
-    // std::vector<bool> slice_flag;
     std::vector<StaticNode*> slice_node_arr;
     for (int i = 0; i < layers_arr.size(); i++)
     {
@@ -529,26 +521,22 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
         std::vector<int> input_dims = GetTensorDim(input_tensor);
         if (groups_arr[i] == 1)
         {
-            // slice_flag.push_back(false);
             slice_node_arr.push_back((StaticNode*)nullptr);
         }
         else
         {
-            // slice_flag.push_back(true);
             std::vector<int> out_dims = input_dims;
             int step = input_dims[1] / groups_arr[i];
             out_dims[1] = step;            
             SliceParam param = any_cast<SliceParam>(OpManager::GetOpDefParam("Slice"));
-            // param.iscaffe = true;
             param.axis = 1;
+            param.iscaffe = false;
+            param.ismxnet = false;
+            param.isncnn = false;
             param.isonnx = true;
             param.slice_point_.clear();
             param.begin = step * group_id_arr[i];
             param.end = step * (group_id_arr[i] + 1);
-            // for (int j = 0; j < groups_arr[i] - 1; j++)
-            // {
-            //     param.slice_point_.push_back(step*(j + 1));
-            // }
             StaticNode* slice_node = CreateStaticNode(graph, slice_name);
             StaticOp* slice_op = CreateStaticOp(graph, "Slice");
             SetOperatorParam(slice_op, param);
@@ -561,9 +549,6 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
             SetTensorDim(slice_out_tensor, out_dims);
             AddNodeOutputTensor(slice_node, slice_out_tensor);
             slice_node_arr.push_back(slice_node);
-            //debug print
-            // for(int it = 0; it < param.slice_point_.size(); it++)
-            //     printf("param slice_point %d : %d\n", it, param.slice_point_[it]);
         }
     }
     //concat
@@ -573,7 +558,6 @@ static bool LoadRoute(StaticGraph* graph, StaticNode* node, std::vector<std::str
         if(slice_node_arr[i] != nullptr)
         {
             StaticNode* slice_node = slice_node_arr[i];
-            // StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, group_id_arr[i]);
             StaticTensor* slice_out_tensor = GetNodeOutputTensor(graph, slice_node, 0);
             std::vector<int> slice_out_dims = GetTensorDim(slice_out_tensor);
             output_c += slice_out_dims[1];
