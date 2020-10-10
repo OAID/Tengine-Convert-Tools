@@ -64,6 +64,7 @@ void LSTM::SetSchema(void)
         .SetAttr("output_act", LSTM_ACT_SIGMOID)
         .SetAttr("cellin_act", LSTM_ACT_TANH)
         .SetAttr("cellout_act", LSTM_ACT_TANH)
+        .SetAttr("algorithm", 0)
         .SetDoc(R"DOC(LSTM Cell
               input: input sequences, a 3D tensor [seq_length,batch_size,input_size]
               kernel: i/c/f/o weight tensor,[num_directions, 4*hidden_size, ]
