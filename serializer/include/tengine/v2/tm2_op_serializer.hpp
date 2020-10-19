@@ -116,6 +116,10 @@
 #include "operator/shape.hpp"
 #include "operator/where.hpp"
 #include "operator/tile.hpp"
+#include "operator/l2pool.hpp"
+#include "operator/log_softmax.hpp"
+#include "operator/l2normalization.hpp"
+#include "operator/relu1.hpp"
 
 #include "operator/batch_norm_param.hpp"
 #include "operator/concat_param.hpp"
@@ -189,6 +193,8 @@
 #include "operator/expand_param.hpp"
 #include "operator/scatter_param.hpp"
 #include "operator/tile_param.hpp"
+#include "operator/l2pool_param.hpp"
+#include "operator/log_softmax_param.hpp"
 #include "tm2_format.h"
 
 namespace TEngine {
@@ -300,6 +306,11 @@ bool LoadTmShapeOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, 
 bool LoadTmWhereOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 bool LoadTmTileOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 bool LoadTmMishOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
+bool LoadTmL2NormalizationOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
+bool LoadTmL2PoolOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
+bool LoadTmLogSoftmaxOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
+bool LoadTmReLU1Op(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
+
 
 op_save_t SaveTmOpFunc(uint32_t op_type);
 tm_uoffset_t SaveTmAccuracyOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
@@ -398,10 +409,14 @@ tm_uoffset_t SaveTmShapeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
 tm_uoffset_t SaveTmWhereOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 tm_uoffset_t SaveTmTileOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 tm_uoffset_t SaveTmMishOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
+tm_uoffset_t SaveTmL2NormalizationOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
+tm_uoffset_t SaveTmL2PoolOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
+tm_uoffset_t SaveTmLogSoftmaxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
+tm_uoffset_t SaveTmReLU1Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 
 template <typename T> const T* GetTmPtr(void* const start_ptr, tm_uoffset_t tm_offset)
 {
-    if (tm_offset != TM2_NOT_SET)
+    if(tm_offset != TM2_NOT_SET)
         return reinterpret_cast<const T*>(reinterpret_cast<char*>(start_ptr) + tm_offset);
     else
         return nullptr;

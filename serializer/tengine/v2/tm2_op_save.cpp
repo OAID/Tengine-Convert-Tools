@@ -305,7 +305,7 @@ tm_uoffset_t SaveTmPriorBoxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Oper
     size_t vector_size = sizeof(tm_size_t) + sizeof(float) * p->min_size.size();
     TM2_Vector_floats* v_minsizes = ( TM2_Vector_floats* )malloc(vector_size);
     v_minsizes->v_num = p->min_size.size();
-    for (unsigned int i = 0; i < p->min_size.size(); i++)
+    for(unsigned int i = 0; i < p->min_size.size(); i++)
     {
         v_minsizes->data[i] = p->min_size[i];
     }
@@ -315,7 +315,7 @@ tm_uoffset_t SaveTmPriorBoxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Oper
     vector_size = sizeof(tm_size_t) + sizeof(float) * p->max_size.size();
     TM2_Vector_floats* v_maxsizes = ( TM2_Vector_floats* )malloc(vector_size);
     v_maxsizes->v_num = p->max_size.size();
-    for (unsigned int i = 0; i < p->max_size.size(); i++)
+    for(unsigned int i = 0; i < p->max_size.size(); i++)
     {
         v_maxsizes->data[i] = p->max_size[i];
     }
@@ -325,7 +325,7 @@ tm_uoffset_t SaveTmPriorBoxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Oper
     vector_size = sizeof(tm_size_t) + sizeof(float) * p->variance.size();
     TM2_Vector_floats* v_variance = ( TM2_Vector_floats* )malloc(vector_size);
     v_variance->v_num = p->variance.size();
-    for (unsigned int i = 0; i < p->variance.size(); i++)
+    for(unsigned int i = 0; i < p->variance.size(); i++)
     {
         v_variance->data[i] = p->variance[i];
     }
@@ -335,7 +335,7 @@ tm_uoffset_t SaveTmPriorBoxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Oper
     vector_size = sizeof(tm_size_t) + sizeof(float) * p->aspect_ratio.size();
     TM2_Vector_floats* v_ratios = ( TM2_Vector_floats* )malloc(vector_size);
     v_ratios->v_num = p->aspect_ratio.size();
-    for (unsigned int i = 0; i < p->aspect_ratio.size(); i++)
+    for(unsigned int i = 0; i < p->aspect_ratio.size(); i++)
     {
         v_ratios->data[i] = p->aspect_ratio[i];
     }
@@ -376,7 +376,7 @@ tm_uoffset_t SaveTmRegionOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operat
     size_t vector_size = sizeof(tm_size_t) + sizeof(float) * p->biases.size();
     TM2_Vector_floats* v_biases = ( TM2_Vector_floats* )malloc(vector_size);
     v_biases->v_num = p->biases.size();
-    for (unsigned int i = 0; i < p->biases.size(); i++)
+    for(unsigned int i = 0; i < p->biases.size(); i++)
     {
         v_biases->data[i] = p->biases[i];
     }
@@ -395,6 +395,7 @@ tm_uoffset_t SaveTmReLuOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     TM2_ReLuParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_ReLuParam));
     tm_param.negative_slope = p->negative_slope;
+
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     SetTmOperator(&tm_op, TM2_OPTYPE_RELU, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ReLuParam)));
@@ -435,37 +436,38 @@ tm_uoffset_t SaveTmReshapeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Opera
     ReshapeParam* p = (dynamic_cast<Reshape*>(op))->GetParam();
     TM2_ReshapeParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_ReshapeParam));
-    if (p->reverse)
+    if(p->reverse)
         tm_param.reverse = 1;
     else
         tm_param.reverse = 0;
-    if (p->is_mxnet)
+    if(p->is_mxnet)
         tm_param.is_mxnet = 1;
     else
         tm_param.is_mxnet = 0;
 
-    if ((p->re_shape).size())
+    if((p->re_shape).size())
     {
         size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->re_shape).size();
         TM2_Vector_dims* v_re_shape = ( TM2_Vector_dims* )malloc(vector_size);
         v_re_shape->v_num = (p->re_shape).size();
-        for (unsigned int i = 0; i < (p->re_shape).size(); i++)
+        for(unsigned int i = 0; i < (p->re_shape).size(); i++)
         {
             v_re_shape->dims[i] = p->re_shape[i];
         }
         tm_param.offset_re_shape = WriteTmObject(start_ptr, cur_pos, v_re_shape, vector_size);
         free(v_re_shape);
     }
-    else
-    {
+    else{
         tm_param.offset_re_shape = TM2_NOT_SET;
     }
+
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     tm_op.op_ver = 2;
     SetTmOperator(&tm_op, TM2_OPTYPE_RESHAPE, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ReshapeParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+
 }
 
 tm_uoffset_t SaveTmResizeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -509,7 +511,7 @@ tm_uoffset_t SaveTmRPNOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator*
     size_t vector_size = sizeof(tm_size_t) + sizeof(float) * p->ratios.size();
     TM2_Vector_floats* v_ratios = ( TM2_Vector_floats* )malloc(vector_size);
     v_ratios->v_num = p->ratios.size();
-    for (unsigned int i = 0; i < p->ratios.size(); i++)
+    for(unsigned int i = 0; i < p->ratios.size(); i++)
     {
         v_ratios->data[i] = p->ratios[i];
     }
@@ -519,7 +521,7 @@ tm_uoffset_t SaveTmRPNOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator*
     vector_size = sizeof(tm_size_t) + sizeof(float) * p->anchor_scales.size();
     TM2_Vector_floats* v_scales = ( TM2_Vector_floats* )malloc(vector_size);
     v_scales->v_num = p->anchor_scales.size();
-    for (unsigned int i = 0; i < p->anchor_scales.size(); i++)
+    for(unsigned int i = 0; i < p->anchor_scales.size(); i++)
     {
         v_scales->data[i] = p->anchor_scales[i];
     }
@@ -529,7 +531,7 @@ tm_uoffset_t SaveTmRPNOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator*
     vector_size = sizeof(tm_size_t) + sizeof(float) * p->anchors_.size() * 4;
     TM2_Vector_anchors* v_anchors = ( TM2_Vector_anchors* )malloc(vector_size);
     v_anchors->v_num = p->anchors_.size();
-    for (unsigned int i = 0; i < p->anchors_.size(); i++)
+    for(unsigned int i = 0; i < p->anchors_.size(); i++)
     {
         v_anchors->data[i][0] = p->anchors_[i].x0;
         v_anchors->data[i][1] = p->anchors_[i].y0;
@@ -577,17 +579,16 @@ tm_uoffset_t SaveTmSliceOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     tm_param.iscaffe = p->iscaffe;
     tm_param.isonnx = p->isonnx;
     tm_param.ismxnet = p->ismxnet;
-    if (!tm_param.iscaffe)
-    {
+    if(!tm_param.iscaffe){
         tm_param.begin = p->begin;
         tm_param.end = p->end;
     }
-    if ((p->slice_point_).size())
+    if((p->slice_point_).size())
     {
         size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->slice_point_).size();
         TM2_Vector_dims* v_slice_points = ( TM2_Vector_dims* )malloc(vector_size);
         v_slice_points->v_num = (p->slice_point_).size();
-        for (unsigned int i = 0; i < (p->slice_point_).size(); i++)
+        for(unsigned int i = 0; i < (p->slice_point_).size(); i++)
         {
             v_slice_points->dims[i] = p->slice_point_[i];
         }
@@ -597,12 +598,12 @@ tm_uoffset_t SaveTmSliceOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     else
         tm_param.offset_vi_slice_points = TM2_NOT_SET;
 
-    if ((p->begin_).size())
+    if((p->begin_).size())
     {
         size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->begin_).size();
         TM2_Vector_dims* v_begins = ( TM2_Vector_dims* )malloc(vector_size);
         v_begins->v_num = (p->begin_).size();
-        for (unsigned int i = 0; i < (p->begin_).size(); i++)
+        for(unsigned int i = 0; i < (p->begin_).size(); i++)
         {
             v_begins->dims[i] = p->begin_[i];
         }
@@ -612,12 +613,12 @@ tm_uoffset_t SaveTmSliceOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     else
         tm_param.offset_vi_begins = TM2_NOT_SET;
 
-    if ((p->size_).size())
+    if((p->size_).size())
     {
         size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->size_).size();
         TM2_Vector_dims* v_sizes = ( TM2_Vector_dims* )malloc(vector_size);
         v_sizes->v_num = (p->size_).size();
-        for (unsigned int i = 0; i < (p->size_).size(); i++)
+        for(unsigned int i = 0; i < (p->size_).size(); i++)
         {
             v_sizes->dims[i] = p->size_[i];
         }
@@ -626,6 +627,7 @@ tm_uoffset_t SaveTmSliceOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     }
     else
         tm_param.offset_vi_sizes = TM2_NOT_SET;
+
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
@@ -651,27 +653,24 @@ tm_uoffset_t SaveTmSplitOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     SplitParam* p = (dynamic_cast<Split*>(op))->GetParam();
     TM2_SplitParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_SplitParam));
-    if (p->is_caffe)
+    if(p->is_caffe)
         tm_param.is_caffe = 1;
     else
         tm_param.is_caffe = 0;
 
-    if (p->is_onnx)
-    {
+    if(p->is_onnx){
         tm_param.is_onnx = 1;
-    }
-    else
-    {
+    } else {
         tm_param.is_onnx = 0;
     }
-    if (!p->is_caffe)
+    if(!p->is_caffe)
     {
-        if (p->is_onnx)
+        if(p->is_onnx)
             tm_param.axis = p->axis;
         size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->split_sizes_).size();
         TM2_Vector_dims* v_split_sizes = ( TM2_Vector_dims* )malloc(vector_size);
         v_split_sizes->v_num = (p->split_sizes_).size();
-        for (unsigned int i = 0; i < (p->split_sizes_).size(); i++)
+        for(unsigned int i = 0; i < (p->split_sizes_).size(); i++)
         {
             v_split_sizes->dims[i] = p->split_sizes_[i];
         }
@@ -701,7 +700,7 @@ tm_uoffset_t SaveTmDetectionPostProcessOp(void* const start_ptr, tm_uoffset_t* c
     size_t vector_size = sizeof(tm_size_t) + sizeof(float) * p->scales.size();
     TM2_Vector_floats* v_scales = ( TM2_Vector_floats* )malloc(vector_size);
     v_scales->v_num = p->scales.size();
-    for (unsigned int i = 0; i < p->scales.size(); i++)
+    for(unsigned int i = 0; i < p->scales.size(); i++)
     {
         v_scales->data[i] = p->scales[i];
     }
@@ -782,7 +781,6 @@ tm_uoffset_t SaveTmLstmOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     tm_param.output_act = p->output_act;
     tm_param.cellin_act = p->cellin_act;
     tm_param.cellout_act = p->cellout_act;
-    tm_param.algorithm = p->algorithm;
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
@@ -905,7 +903,7 @@ tm_uoffset_t SaveTmTopKV2Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operat
     memset(&tm_param, 0, sizeof(TM2_TopKV2Param));
 
     tm_param.k = p->k;
-    if (p->sorted)
+    if(p->sorted)
         tm_param.sorted = 1;
     else
         tm_param.sorted = 0;
@@ -1059,8 +1057,7 @@ tm_uoffset_t SaveTmShuffleChannelOp(void* const start_ptr, tm_uoffset_t* cur_pos
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_SHUFFLECHANNEL,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ShuffleChannelParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_SHUFFLECHANNEL, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ShuffleChannelParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
@@ -1079,8 +1076,7 @@ tm_uoffset_t SaveTmSpaceToBatchNDOp(void* const start_ptr, tm_uoffset_t* cur_pos
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_SPACETOBATCHND,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_SpaceToBatchNDParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_SPACETOBATCHND, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_SpaceToBatchNDParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
@@ -1099,8 +1095,7 @@ tm_uoffset_t SaveTmBatchToSpaceNDOp(void* const start_ptr, tm_uoffset_t* cur_pos
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_BATCHTOSPACEND,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_BatchToSpaceNDParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_BATCHTOSPACEND, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_BatchToSpaceNDParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 tm_uoffset_t SaveTmCropOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -1125,8 +1120,7 @@ tm_uoffset_t SaveTmCropOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
-tm_uoffset_t SaveTmUnaryOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmUnaryOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     UnaryParam* p = (dynamic_cast<Unary*>(op))->GetParam();
     TM2_UnaryParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_UnaryParam));
@@ -1138,8 +1132,7 @@ tm_uoffset_t SaveTmUnaryOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     SetTmOperator(&tm_op, TM2_OPTYPE_UNARY, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_UnaryParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
-tm_uoffset_t SaveTmPsroipoolingOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmPsroipoolingOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     PsroipoolingParam* p = (dynamic_cast<Psroipooling*>(op))->GetParam();
     TM2_PsroipoolingParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_PsroipoolingParam));
@@ -1151,26 +1144,22 @@ tm_uoffset_t SaveTmPsroipoolingOp(void* const start_ptr, tm_uoffset_t* cur_pos, 
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_PSROIPOOLING,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_PsroipoolingParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_PSROIPOOLING, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_PsroipoolingParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
-tm_uoffset_t SaveTmExpanddimsOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmExpanddimsOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     ExpandDimsParam* p = (dynamic_cast<ExpandDims*>(op))->GetParam();
     TM2_ExpanddimsParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_ExpanddimsParam));
 
-    tm_param.axis = p->axis;
+    tm_param.axis= p->axis;
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_EXPANDDIMS,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ExpanddimsParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_EXPANDDIMS, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ExpanddimsParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
-tm_uoffset_t SaveTmRoialignOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmRoialignOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     RoialignParam* p = (dynamic_cast<Roialign*>(op))->GetParam();
     TM2_RoialignParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_RoialignParam));
@@ -1207,8 +1196,7 @@ tm_uoffset_t SaveTmThresholdOp(void* const start_ptr, tm_uoffset_t* cur_pos, Ope
     tm_param.threshold = p->threshold;
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_THRESHOLD,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ThresholdParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_THRESHOLD, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ThresholdParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
@@ -1226,7 +1214,7 @@ tm_uoffset_t SaveTmEmbedOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     TM2_EmbedParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_EmbedParam));
 
-    // tm_param.bias_term = p->bias_term;
+    //tm_param.bias_term = p->bias_term;
     tm_param.input_dim = p->input_dim;
     tm_param.num_output = p->num_output;
     tm_param.weight_data_size = p->weight_data_size;
@@ -1247,8 +1235,7 @@ tm_uoffset_t SaveTmHardsigmoidOp(void* const start_ptr, tm_uoffset_t* cur_pos, O
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_HARDSIGMOID,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_HardsigmoidParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_HARDSIGMOID, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_HardsigmoidParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 tm_uoffset_t SaveTmInstanceNormOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -1257,10 +1244,10 @@ tm_uoffset_t SaveTmInstanceNormOp(void* const start_ptr, tm_uoffset_t* cur_pos, 
     TM2_InstanceNormParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_InstanceNormParam));
     tm_param.eps = p->eps;
+
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_INSTANCENORM,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_InstanceNormParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_INSTANCENORM, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_InstanceNormParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 tm_uoffset_t SaveTmMVNOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -1278,16 +1265,14 @@ tm_uoffset_t SaveTmMVNOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator*
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
-tm_uoffset_t SaveTmAbsvalOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmAbsvalOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     SetTmOperator(&tm_op, TM2_OPTYPE_ABSVAL, TM2_NOT_SET);
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
-tm_uoffset_t SaveTmCastOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmCastOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     CastParam* p = (dynamic_cast<Cast*>(op))->GetParam();
     TM2_CastParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_CastParam));
@@ -1300,8 +1285,7 @@ tm_uoffset_t SaveTmCastOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
-tm_uoffset_t SaveTmHardSwishOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmHardSwishOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     HardswishParam* p = (dynamic_cast<Hardswish*>(op))->GetParam();
     TM2_HardSwishParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_HardSwishParam));
@@ -1313,8 +1297,7 @@ tm_uoffset_t SaveTmHardSwishOp(void* const start_ptr, tm_uoffset_t* cur_pos, Ope
     SetTmOperator(&tm_op, TM2_OPTYPE_CAST, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_HardSwishParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
-tm_uoffset_t SaveTmInterpOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmInterpOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     InterpParam* p = (dynamic_cast<Interp*>(op))->GetParam();
     TM2_InterpParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_InterpParam));
@@ -1329,8 +1312,7 @@ tm_uoffset_t SaveTmInterpOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operat
     SetTmOperator(&tm_op, TM2_OPTYPE_INTERP, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_InterpParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
-tm_uoffset_t SaveTmSeluOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmSeluOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     SeluParam* p = (dynamic_cast<Selu*>(op))->GetParam();
     TM2_SeluParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_SeluParam));
@@ -1342,8 +1324,7 @@ tm_uoffset_t SaveTmSeluOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     SetTmOperator(&tm_op, TM2_OPTYPE_SELU, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_SeluParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
-tm_uoffset_t SaveTmEluOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmEluOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     EluParam* p = (dynamic_cast<Elu*>(op))->GetParam();
     TM2_EluParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_EluParam));
@@ -1355,8 +1336,7 @@ tm_uoffset_t SaveTmEluOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator*
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
-tm_uoffset_t SaveTmBroadMulOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
-{
+tm_uoffset_t SaveTmBroadMulOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     SetTmOperator(&tm_op, TM2_OPTYPE_BROADMUL, TM2_NOT_SET);
@@ -1397,27 +1377,25 @@ tm_uoffset_t SaveTmTransposeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Ope
     TransposeParam* p = (dynamic_cast<Transpose*>(op))->GetParam();
     TM2_TransposeParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_TransposeParam));
-    if ((p->tr_shape).size())
+    if((p->tr_shape).size())
     {
         size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->tr_shape).size();
         TM2_Vector_dims* v_re_shape = ( TM2_Vector_dims* )malloc(vector_size);
         v_re_shape->v_num = (p->tr_shape).size();
-        for (unsigned int i = 0; i < (p->tr_shape).size(); i++)
+        for(unsigned int i = 0; i < (p->tr_shape).size(); i++)
         {
             v_re_shape->dims[i] = p->tr_shape[i];
         }
         tm_param.offset_tr_shape = WriteTmObject(start_ptr, cur_pos, v_re_shape, vector_size);
         free(v_re_shape);
     }
-    else
-    {
+    else{
         tm_param.offset_tr_shape = TM2_NOT_SET;
     }
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     tm_op.op_ver = 2;
-    SetTmOperator(&tm_op, TM2_OPTYPE_TRANSPOSE,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_TransposeParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_TRANSPOSE, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_TransposeParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 tm_uoffset_t SaveTmComparisonOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -1429,8 +1407,7 @@ tm_uoffset_t SaveTmComparisonOp(void* const start_ptr, tm_uoffset_t* cur_pos, Op
     tm_param.type = p->type;
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_COMPARISON,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ComparisonParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_COMPARISON, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ComparisonParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 tm_uoffset_t SaveTmReverseOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -1450,8 +1427,7 @@ tm_uoffset_t SaveTmSpaceToDepthOp(void* const start_ptr, tm_uoffset_t* cur_pos, 
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_SPACETODEPTH,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_SpaceToDepthParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_SPACETODEPTH, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_SpaceToDepthParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 tm_uoffset_t SaveTmDepthToSpaceOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -1464,8 +1440,7 @@ tm_uoffset_t SaveTmDepthToSpaceOp(void* const start_ptr, tm_uoffset_t* cur_pos, 
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_DEPTHTOSPACE,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_DepthToSpaceParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_SPACETODEPTH, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_DepthToSpaceParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 tm_uoffset_t SaveTmSquaredDifferenceOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -1487,8 +1462,7 @@ tm_uoffset_t SaveTmSparseToDenseOp(void* const start_ptr, tm_uoffset_t* cur_pos,
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_SPARSETODENSE,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_SparseToDenseParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_SPARSETODENSE, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_SparseToDenseParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 tm_uoffset_t SaveTmCeilOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
@@ -1533,12 +1507,12 @@ tm_uoffset_t SaveTmUnsqueezeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Ope
     TM2_UnsqueezeParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_UnsqueezeParam));
 
-    if ((p->axises).size())
+    if((p->axises).size())
     {
         size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->axises).size();
         TM2_Vector_dims* v_axises = ( TM2_Vector_dims* )malloc(vector_size);
         v_axises->v_num = (p->axises).size();
-        for (unsigned int i = 0; i < (p->axises).size(); i++)
+        for(unsigned int i = 0; i < (p->axises).size(); i++)
         {
             v_axises->dims[i] = p->axises[i];
         }
@@ -1550,8 +1524,7 @@ tm_uoffset_t SaveTmUnsqueezeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Ope
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_UNSQUEEZE,
-                  WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_UnsqueezeParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_UNSQUEEZE, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_UnsqueezeParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
@@ -1584,12 +1557,12 @@ tm_uoffset_t SaveTmExpandOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operat
     TM2_ExpandParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_ExpandParam));
 
-    if (p->shape.size())
+    if(p->shape.size())
     {
         size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->shape).size();
         TM2_Vector_dims* v_axises = ( TM2_Vector_dims* )malloc(vector_size);
         v_axises->v_num = (p->shape).size();
-        for (unsigned int i = 0; i < (p->shape).size(); i++)
+        for(unsigned int i = 0; i < (p->shape).size(); i++)
         {
             v_axises->dims[i] = p->shape[i];
         }
@@ -1651,15 +1624,15 @@ tm_uoffset_t SaveTmTileOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     TM2_TileParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_TileParam));
 
-    if (p->frame_flag == 0)    // caffe
+    if(p->frame_flag == 0)  // caffe
     {
         tm_param.offset_vi_flag = 0;
-        if ((p->reps).size())
+        if((p->reps).size())
         {
             size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->reps).size();
             TM2_Vector_dims* v_reps = ( TM2_Vector_dims* )malloc(vector_size);
             v_reps->v_num = (p->reps).size();
-            for (unsigned int i = 0; i < (p->reps).size(); i++)
+            for(unsigned int i = 0; i < (p->reps).size(); i++)
             {
                 v_reps->dims[i] = p->reps[i];
             }
@@ -1668,8 +1641,9 @@ tm_uoffset_t SaveTmTileOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
         }
         else
             tm_param.offset_vi_reps = TM2_NOT_SET;
+    
     }
-    else if (p->frame_flag == 1)    // onnx
+    else if(p->frame_flag == 1)   // onnx
     {
         tm_param.offset_vi_flag = 1;
     }
@@ -1685,10 +1659,58 @@ tm_uoffset_t SaveTmTileOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     SetTmOperator(&tm_op, TM2_OPTYPE_TILE, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_TileParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
+tm_uoffset_t SaveTmRELU1Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_RELU1, TM2_NOT_SET);
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
+tm_uoffset_t SaveTmLogSoftmaxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    
+    LogSoftmaxParam* p = (dynamic_cast<LogSoftmax*>(op))->GetParam();
+    TM2_LogSoftmaxParam tm_param;
+    memset(&tm_param, 0, sizeof(TM2_LogSoftmaxParam));
+    tm_param.axis = p->axis;
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_LOGSOFTMAX, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_LogSoftmaxParam)));
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
+tm_uoffset_t SaveTmL2PoolOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    L2PoolParam* p = (dynamic_cast<L2Pool*>(op))->GetParam();
+    TM2_L2PoolParam tm_param;
+    memset(&tm_param, 0, sizeof(TM2_L2PoolParam));
+    tm_param.kernel_h = p->kernel_h;
+    tm_param.kernel_w = p->kernel_w;
+    tm_param.stride_h = p->stride_h;
+    tm_param.stride_w = p->stride_w;
+    if(p->padding == PaddingType::kNone){
+        tm_param.type = 0;
+    } else if (p->padding == PaddingType::kSame){
+        tm_param.type = 1;
+    } else {
+        tm_param.type = 2;
+    }
+
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_L2POOL, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_L2PoolParam)));
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
+tm_uoffset_t SaveTmL2NormalizationOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_L2NORMALIZATION, TM2_NOT_SET);
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
 
 op_save_t SaveTmOpFunc(uint32_t op_type)
 {
-    switch (op_type)
+    switch(op_type)
     {
         case TM2_OPTYPE_ACCURACY:
             return SaveTmAccuracyOp;
@@ -1886,6 +1908,14 @@ op_save_t SaveTmOpFunc(uint32_t op_type)
             return SaveTmTileOp;
         case TM2_OPTYPE_MISH:
             return SaveTmMishOp;
+        case TM2_OPTYPE_LOGSOFTMAX:
+            return SaveTmLogSoftmaxOp;
+        case TM2_OPTYPE_L2NORMALIZATION:
+            return SaveTmL2NormalizationOp;
+        case TM2_OPTYPE_L2POOL:
+            return SaveTmL2PoolOp;
+        case TM2_OPTYPE_RELU1:
+            return SaveTmRELU1Op;
         default:
             LOG_ERROR() << "Operator #" << op_type << " not supported in tengine model yet\n";
             return nullptr;
