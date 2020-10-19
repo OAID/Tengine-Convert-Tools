@@ -420,7 +420,8 @@ static bool GraphFuseBNScale(Graph* graph, GraphOptimizer* opt)
         Node* orig_output = orig->output_nodes[0];
         Node* orig_input = orig->input_nodes[0];
 
-        std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
+        //std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
+        std::string node_name = orig_input->GetName();
 
         /*create new Node node*/
         Node* fused_node = new Node(node_name);
@@ -549,7 +550,8 @@ static bool GraphFuseRelu6(Graph* graph, GraphOptimizer* opt)
         Node* orig_output = orig->output_nodes[0];
         Node* orig_input = orig->input_nodes[0];
 
-        std::string node_name = orig_input->GetName() + orig_output->GetName();
+        //std::string node_name = orig_input->GetName() + orig_output->GetName();
+        std::string node_name = orig_input->GetName();
 
         /*create new Node node*/
         Node* fused_node = new Node(node_name);
@@ -643,7 +645,8 @@ static bool GraphFuseConvBN(Graph* graph, GraphOptimizer* opt)
         Node* orig_output = orig->output_nodes[0];
         Node* orig_input = orig->input_nodes[0];
 
-        std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
+        //std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
+        std::string node_name = orig_input->GetName();
 
         /*create new Node node*/
         Node* fused_node = new Node(node_name);
@@ -779,7 +782,8 @@ static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt)
         Node* orig_output = orig->output_nodes[0];
         Node* orig_input = orig->input_nodes[0];
 
-        std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
+        //std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
+        std::string node_name = orig_input->GetName();
 
         /*create new Node node*/
         Node* fused_node = new Node(node_name);
@@ -988,7 +992,8 @@ static bool GraphFuseConvReLuCommon(Graph* graph, GraphOptimizer* opt, bool relu
         Node* orig_output = orig->output_nodes[0];
         Node* orig_input = orig->input_nodes[0];
 
-        std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
+        //std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
+        std::string node_name = orig_input->GetName();
 
         Node* fused_node = new Node(node_name);
         Operator* op = OpManager::CreateOp("Convolution");
