@@ -39,17 +39,18 @@ namespace TEngine {
 // template SpecificFactory<TmSerializer> SpecificFactory<TmSerializer>::instance;
 template class SpecificFactory<TmSerializer>;
 
+
 extern bool register_tm2_serializer();
 
 bool TmSerializer::SaveModel(const std::vector<std::string>& file_list, Graph* graph)
 {
     /* Check the file number */
-    if (file_list.size() != GetFileNum())
+    if(file_list.size() != GetFileNum())
         return false;
 
     /* Open the tengine model file */
     int fd = open(file_list[0].c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
-    if (fd == -1)
+    if(fd == -1)
     {
         LOG_ERROR() << "Could not open " << file_list[0] << "\n";
         return false;
@@ -58,7 +59,7 @@ bool TmSerializer::SaveModel(const std::vector<std::string>& file_list, Graph* g
     std::vector<void*> addr_list;
     std::vector<int> size_list;
 
-    if (!SaveModel(addr_list, size_list, graph))
+    if(!SaveModel(addr_list, size_list, graph))
     {
         close(fd);
         return false;
@@ -71,7 +72,7 @@ bool TmSerializer::SaveModel(const std::vector<std::string>& file_list, Graph* g
     close(fd);
     free(buf);
 
-    if (ret != size)
+    if(ret != size)
         return false;
     else
         return true;
@@ -83,11 +84,11 @@ bool TmSerializer::SaveModel(std::vector<void*>& addr_list, std::vector<int>& si
 
     uint32_t malloc_size = TM_FILE_MAX_SIZE;
     const char* env = std::getenv("TM_FILE_MAX_SIZE");
-    if (env)
+    if(env)
         malloc_size = std::atoi(env);
 
     void* start_ptr = ( void* )malloc(malloc_size);
-    if (start_ptr == nullptr)
+    if(start_ptr == nullptr)
     {
         LOG_ERROR() << "Malloc memory failed: " << malloc_size << ".\n";
         return false;
@@ -107,7 +108,7 @@ bool TmSerializer::SaveModel(std::vector<void*>& addr_list, std::vector<int>& si
 bool TmSerializer::LoadBinaryFile(const char* tm_fname, int& fd, void*& buf, int& size)
 {
     fd = open(tm_fname, O_RDONLY);
-    if (fd == -1)
+    if(fd == -1)
     {
         LOG_ERROR() << "Could not open \'" << tm_fname << "\'\n";
         return false;
@@ -118,7 +119,7 @@ bool TmSerializer::LoadBinaryFile(const char* tm_fname, int& fd, void*& buf, int
     size = sb.st_size;
 
     buf = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
-    if (buf == MAP_FAILED)
+    if(buf == MAP_FAILED)
     {
         LOG_ERROR() << "Mmap of \'" << tm_fname << "\' failed\n";
         return false;
@@ -133,10 +134,10 @@ bool TmSerializer::LoadModel(const std::vector<std::string>& file_list, StaticGr
     void* mmap_buf;
     int mmap_size;
 
-    if (file_list.size() != GetFileNum())
+    if(file_list.size() != GetFileNum())
         return false;
 
-    if (!LoadBinaryFile(file_list[0].c_str(), fd, mmap_buf, mmap_size))
+    if(!LoadBinaryFile(file_list[0].c_str(), fd, mmap_buf, mmap_size))
         return false;
 
     SetGraphSource(graph, file_list[0]);
@@ -145,7 +146,7 @@ bool TmSerializer::LoadModel(const std::vector<std::string>& file_list, StaticGr
 
     const uint16_t* ver_main = reinterpret_cast<const uint16_t*>(mmap_buf);
     TmSerializerPtr tm_serializer;
-    if (*ver_main < 2)
+    if(*ver_main < 2)
     {
         LOG_WARN()
             << "The input tengine model file is in old format, please regenerate it by using tengine convert tool.\n";
@@ -164,7 +165,7 @@ bool TmSerializer::LoadModel(const std::vector<std::string>& file_list, StaticGr
 bool TmSerializer::LoadModel(const std::vector<const void*>& addr_list, const std::vector<int>& size_list,
                              StaticGraph* graph, bool transfer_mem)
 {
-    if (addr_list.size() != GetFileNum())
+    if(addr_list.size() != GetFileNum())
         return false;
 
     void* mmap_buf = ( void* )addr_list[0];
@@ -177,7 +178,7 @@ bool TmSerializer::LoadModel(const std::vector<const void*>& addr_list, const st
 
     bool ret = tm_serializer->LoadModelFromMem(mmap_buf, graph);
 
-    if (ret && transfer_mem)
+    if(ret && transfer_mem)
         graph->mem_src.push_back(mmap_buf);
 
     return ret;
@@ -190,6 +191,7 @@ bool TmSerializerInit(void)
     auto tm_serializer = factory->Create("tengine");
 
     SerializerManager::SafeAdd("tengine", SerializerPtr(tm_serializer));
+
 
     bool ret2 = register_tm2_serializer();
 
