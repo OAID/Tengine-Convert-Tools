@@ -141,6 +141,8 @@ bool LoadTmDeconvOp(StaticGraph* graph, StaticNode* node, void* const start_ptr,
     param.dilation_w = tm_param->dilation_w;
     param.group = tm_param->group;
     param.activation = tm_param->activation;
+    param.output_pad_h0 = tm_param->output_pad_h0;
+    param.output_pad_w0 = tm_param->output_pad_w0;
 
     StaticOp* op = CreateStaticOp(graph, op_str);
     SetOperatorParam(op, param);

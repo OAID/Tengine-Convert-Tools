@@ -43,6 +43,8 @@ struct DeconvParam : public NamedParam
     int dilation_w;
     int group;
     int activation;
+    int output_pad_h0;
+    int output_pad_w0;    
 
     DECLARE_PARSER_STRUCTURE(DeconvParam)
     {
@@ -59,6 +61,8 @@ struct DeconvParam : public NamedParam
         DECLARE_PARSER_ENTRY(dilation_w);
         DECLARE_PARSER_ENTRY(group);
         DECLARE_PARSER_ENTRY(activation);
+        DECLARE_PARSER_ENTRY(output_pad_h0);
+        DECLARE_PARSER_ENTRY(output_pad_w0);
     };
 };
 
