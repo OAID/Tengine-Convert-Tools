@@ -1296,7 +1296,7 @@ bool TFSerializer::OptimizeGraph(TFGraph& tf_graph)
 {
     /* first clean up the predictions module of TF */
     auto ir = tf_graph.seq_nodes.begin();
-
+    #if 0
     while (ir != tf_graph.seq_nodes.end())
     {
         TFNode* cur_node = *ir;
@@ -1347,7 +1347,7 @@ bool TFSerializer::OptimizeGraph(TFGraph& tf_graph)
 
         ir++;
     }
-
+    #endif
     /* remove the squeeze node and identity */
     ir = tf_graph.seq_nodes.begin();
 
@@ -1789,7 +1789,7 @@ bool TFSerializer::GenerateStaticGraph(TFGraph& tf_graph, StaticGraph* graph)
     }
    for(int i = 0; i < node_number; i++){
         TFNode* tf_node = tf_graph.seq_nodes[i];
-        if(tf_node->op == "null")
+        if(tf_node->op == "null" || tf_node->op == "Placeholder" || tf_node->op == "Const")
             continue; 
 
         std::vector<std::string>::iterator iter=std::find(support_op.begin(), support_op.end(), tf_node->op);
@@ -4496,6 +4496,7 @@ bool TFSerializerRegisterOpLoader(void)
     p_tf->RegisterOpLoadMethod("Ceil", op_load_t(LoadCeil));
     p_tf->RegisterOpLoadMethod("Round", op_load_t(LoadRound));
     p_tf->RegisterOpLoadMethod("SparseToDense", op_load_t(LoadSparseToDense));
+    p_tf->RegisterOpLoadMethod("Neg", op_load_t(LoadUnary));
     return true;
 }
 

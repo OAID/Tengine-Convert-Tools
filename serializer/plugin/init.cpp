@@ -46,12 +46,12 @@ int serializer_plugin_init(void)
 {
     // Register into factory
 
-    // auto factory = SerializerFactory::GetFactory();
+    //auto factory = SerializerFactory::GetFactory();
 
 #ifdef CONFIG_TENGINE_SERIALIZER
     TmSerializerInit();
 
-    //#define SrcTmName "src_tm"
+//#define SrcTmName "src_tm"
 
     factory->RegisterInterface<SrcTmSerializer>(SrcTmName);
     auto src_tm_serializer = factory->Create(SrcTmName);
