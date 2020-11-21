@@ -517,7 +517,8 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
     for(int i = 0; i < onnx_graph.node_size(); i++){
         const onnx::NodeProto& onnx_node = onnx_graph.node(i);
         const std::string& onnx_op_name = onnx_node.op_type();
-        if(onnx_op_name == "null" || onnx_op_name == "_zeros" || onnx_op_name == "constant")
+
+        if(onnx_op_name == "null" || onnx_op_name == "_zeros"|| onnx_op_name == "Constant")
             continue; 
 
         std::vector<std::string>::iterator iter=std::find(support_op.begin(), support_op.end(), onnx_op_name);

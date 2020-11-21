@@ -395,7 +395,6 @@ tm_uoffset_t SaveTmReLuOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     TM2_ReLuParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_ReLuParam));
     tm_param.negative_slope = p->negative_slope;
-
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     SetTmOperator(&tm_op, TM2_OPTYPE_RELU, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ReLuParam)));
@@ -781,6 +780,7 @@ tm_uoffset_t SaveTmLstmOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     tm_param.output_act = p->output_act;
     tm_param.cellin_act = p->cellin_act;
     tm_param.cellout_act = p->cellout_act;
+    tm_param.algorithm = p->algorithm;
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
