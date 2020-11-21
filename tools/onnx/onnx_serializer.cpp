@@ -2427,10 +2427,8 @@ static bool LoadOnnxDeConvOp(StaticGraph* graph, StaticNode* node, const onnx::N
         }
         else if (attr.name() == "output_padding")
         {
-            param.pad_h0 = attr.ints(0);
-            param.pad_h1 = attr.ints(0);
-            param.pad_w0 = attr.ints(1);
-            param.pad_w1 = attr.ints(1);
+            param.output_pad_h0 = attr.ints(0);
+            param.output_pad_w0 = attr.ints(1);
         }
         else if (attr.name() == "pads")
         {

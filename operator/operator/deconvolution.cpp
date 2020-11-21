@@ -124,6 +124,8 @@ void Deconvolution::SetSchema(void)
         .SetAttr("num_output", 1)
         .SetAttr("group", 1)
         .SetAttr("activation", -1)
+        .SetAttr("output_pad_h0", 0)
+        .SetAttr("output_pad_w0", 0)
 
         .SetDoc(R"DOC(Deconvolution Layer)DOC");
 }

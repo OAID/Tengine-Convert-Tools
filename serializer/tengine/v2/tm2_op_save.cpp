@@ -132,7 +132,9 @@ tm_uoffset_t SaveTmDeconvOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operat
     tm_param.dilation_w = p->dilation_w;
     tm_param.group = p->group;
     tm_param.activation = p->activation;
-
+    tm_param.output_pad_h0 = p->output_pad_h0;
+    tm_param.output_pad_w0 = p->output_pad_w0;
+    
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     SetTmOperator(&tm_op, TM2_OPTYPE_DECONVOLUTION,
