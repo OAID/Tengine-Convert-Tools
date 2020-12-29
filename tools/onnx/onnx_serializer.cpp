@@ -588,9 +588,9 @@ static bool LoadOnnxConvolutionOp(StaticGraph* graph, StaticNode* node, const on
         else if (attr.name() == "pads")
         {
             param.pad_h0 = attr.ints(0);
-            param.pad_h1 = attr.ints(0);
+            param.pad_h1 = attr.ints(2);
             param.pad_w0 = attr.ints(1);
-            param.pad_w1 = attr.ints(1);
+            param.pad_w1 = attr.ints(3);
         }
         else if (attr.name() == "group")
         {
@@ -703,9 +703,9 @@ static bool LoadOnnxPooling(StaticGraph* graph, StaticNode* node, const onnx::No
             else if (attr.name() == "pads")
             {
                 param.pad_h0 = attr.ints(0);
-                param.pad_h1 = attr.ints(0);
+                param.pad_h1 = attr.ints(2);
                 param.pad_w0 = attr.ints(1);
-                param.pad_w1 = attr.ints(1);
+                param.pad_w1 = attr.ints(3);
             }
         }
     }
@@ -2433,9 +2433,9 @@ static bool LoadOnnxDeConvOp(StaticGraph* graph, StaticNode* node, const onnx::N
         else if (attr.name() == "pads")
         {
             param.pad_h0 = attr.ints(0);
-            param.pad_h1 = attr.ints(0);
+            param.pad_h1 = attr.ints(2);
             param.pad_w0 = attr.ints(1);
-            param.pad_w1 = attr.ints(1);
+            param.pad_w1 = attr.ints(3);
         }
         else if (attr.name() == "group")
         {
