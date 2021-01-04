@@ -17,6 +17,11 @@
  * under the License.
  */
 
+/*
+ * Copyright (c) 2020, OneFlow Inc.
+ * Author: daquexian566@gmail.com
+ */
+
 #ifndef __ONEFLOW_SERIALIER_HPP__
 #define __ONEFLOW_SERIALIER_HPP__
 

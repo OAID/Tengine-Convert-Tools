@@ -18,8 +18,8 @@
  */
 
 /*
- * Copyright (c) 2017, Open AI Lab
- * Author: haitao@openailab.com
+ * Copyright (c) 2020, OneFlow Inc.
+ * Author: daquexian566@gmail.com
  */
 
 #include <google/protobuf/io/coded_stream.h>
