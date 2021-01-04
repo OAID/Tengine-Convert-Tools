@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        if (file_format == "caffe" || file_format == "mxnet" || file_format == "darknet" || file_format == "ncnn")
+        if (file_format == "caffe" || file_format == "mxnet" || file_format == "darknet" || file_format == "ncnn" || file_format == "oneflow")
         {
             proto_file_needed = true;
             model_file_needed = true;
@@ -100,9 +100,9 @@ int main(int argc, char* argv[])
         else
         {
 #ifdef BUILD_MEGENGINE_SERIALIZER
-            std::cout << "Allowed input file format: caffe, caffe_single, onnx, mxnet, tensorflow, darknet, ncnn, megengine\n";
+            std::cout << "Allowed input file format: caffe, caffe_single, onnx, oneflow, mxnet, tensorflow, darknet, ncnn, megengine\n";
 #else
-            std::cout << "Allowed input file format: caffe, caffe_single, onnx, mxnet, tensorflow, darknet, ncnn\n";
+            std::cout << "Allowed input file format: caffe, caffe_single, onnx, oneflow, mxnet, tensorflow, darknet, ncnn\n";
 #endif
             return -1;
         }

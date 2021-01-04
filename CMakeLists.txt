@@ -37,6 +37,7 @@ add_definitions(-O3)
 # paser options
 option(BUILD_CAFFE_SERIALIZER       "Caffe serializer"          ON)
 option(BUILD_ONNX_SERIALIZER        "ONNX serializer"           ON)
+option(BUILD_ONEFLOW_SERIALIZER     "OneFlow serializer"        ON)
 option(BUILD_MXNET_SERIALIZER       "MXNet serializer"          ON)
 option(BUILD_DARKNET_SERIALIZER     "Darknet serializer"        ON)
 option(BUILD_TF_SERIALIZER          "TensorFlow serializer"     ON)
