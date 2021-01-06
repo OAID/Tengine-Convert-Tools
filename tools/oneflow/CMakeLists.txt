@@ -7,5 +7,10 @@ protobuf_generate_cpp(ONEFLOW_PROTO_SRCS ONEFLOW_PROTO_HDRS ${ONEFLOW_SERIALIZER
 
 FILE(GLOB_RECURSE ONEFLOW_SERIALIZER_SRCS "*.cpp")
 add_library(oneflow2tengine ${ONEFLOW_SERIALIZER_SRCS} ${ONEFLOW_PROTO_SRCS})
-target_link_libraries(oneflow2tengine ${CMAKE_PROJECT_NAME} protobuf::libprotobuf)
+if (${CMAKE_VERSION} VERSION_LESS "3.9.0")
+    target_link_libraries(oneflow2tengine ${CMAKE_PROJECT_NAME} ${Protobuf_LIBRARIES})
+    target_include_directories(oneflow2tengine PUBLIC ${Protobuf_INCLUDE_DIRS})
+else()
+    target_link_libraries(oneflow2tengine ${CMAKE_PROJECT_NAME} protobuf::libprotobuf)
+endif()
 target_include_directories(oneflow2tengine PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

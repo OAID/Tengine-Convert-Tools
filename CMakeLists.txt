@@ -46,6 +46,10 @@ option(BUILD_NCNN_SERIALIZER        "NCNN serializer"           ON)
 option(BUILD_MEGENGINE_SERIALIZER   "MegEngine serializer"      OFF)
 option(BUILD_TENGINE_SERIALIZER     "Tengine serializer"        ON)
 
+if (BUILD_ONEFLOW_SERIALIZER AND (${CMAKE_VERSION} VERSION_LESS "3.7.0"))
+    message(FATAL_ERROR "Please upgrade your cmake (maybe by \"pip3 install -U cmake\") or disable OneFlow serializer by \"cmake -DBUILD_ONEFLOW_SERIALIZER=OFF ..\"")
+endif()
+
 # add all header file folder
 include_directories(include)
 include_directories(core/include)
