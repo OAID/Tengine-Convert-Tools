@@ -40,7 +40,6 @@
 #include "tengine_errno.hpp"
 #include "static_graph_interface.hpp"
 #include "serializer.hpp"
-#include "compiler_fp16.h"
 
 namespace TEngine {
 
