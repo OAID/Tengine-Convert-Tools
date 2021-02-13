@@ -31,8 +31,11 @@ add_definitions(-funroll-loops)
 add_definitions(-Wno-deprecated-register)
 add_definitions(-Wno-overloaded-virtual)
 add_definitions(-fPIC)
-#add_definitions(-g)
-add_definitions(-O3)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -matomics")
+set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -pthread -matomics")
 
 # paser options
 option(BUILD_CAFFE_SERIALIZER       "Caffe serializer"          ON)

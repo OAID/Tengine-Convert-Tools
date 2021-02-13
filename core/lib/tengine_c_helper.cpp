@@ -297,10 +297,10 @@ const char* get_model_name(graph_t graph)
         return executor->GetModelName().c_str();
 }
 
-extern void operator_plugin_init(void);
-extern void serializer_plugin_init(void);
-extern void executor_plugin_init(void);
-extern void driver_plugin_init(void);
+extern int operator_plugin_init(void);
+extern int serializer_plugin_init(void);
+extern int executor_plugin_init(void);
+extern int driver_plugin_init(void);
 
 #ifdef ALL_IN_STATIC_LIB
 extern "C" int register_hclcpu_ops(void);

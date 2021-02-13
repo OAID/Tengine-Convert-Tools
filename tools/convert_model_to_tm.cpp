@@ -195,7 +195,9 @@ int main(int argc, char* argv[])
     std::cout << "Create tengine model file done: " << output_tmfile << "\n";
 
     destroy_graph(graph);
+#ifndef __EMSCRIPTEN__
     release_tengine();
+#endif
 
     return 0;
 }

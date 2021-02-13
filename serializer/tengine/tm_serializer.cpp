@@ -32,7 +32,11 @@
 
 #include "tm_serializer.hpp"
 
+#ifdef __EMSCRIPTEN__
+#define TM_FILE_MAX_SIZE 1 << 28 /* 256M */
+#else
 #define TM_FILE_MAX_SIZE 1 << 30 /* 1G */
+#endif
 
 namespace TEngine {
 
