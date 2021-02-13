@@ -192,6 +192,8 @@ bool CPUDriver::SetGraphAttr(Device* dev, void* graph_handle, const char* name, 
 
     if (OnSetGraphAttr(context, graph, name, val, size))
         return true;
+
+    return false;
 }
 
 bool CPUDriver::GetGraphAttr(Device* dev, void* graph_handle, const char* name, void* val, int size)
@@ -202,6 +204,8 @@ bool CPUDriver::GetGraphAttr(Device* dev, void* graph_handle, const char* name, 
 
     if (OnGetGraphAttr(context, graph, name, val, size))
         return true;
+
+    return false;
 }
 
 int CPUDriver::DestroyDevice(void)

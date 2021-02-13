@@ -26,7 +26,9 @@
 #ifndef __WORKER_THREAD_HPP__
 #define __WORKER_THREAD_HPP__
 
+#ifndef __EMSCRIPTEN__
 #include <sched.h>
+#endif
 #include <sys/time.h>
 #include <errno.h>
 #include <string.h>
@@ -135,14 +137,19 @@ private:
         // bind CPU first
         if (bind_cpu_ >= 0)
         {
+#ifdef __EMSCRIPTEN__
+            bind_done_ = true;
+#else
             cpu_set_t mask;
             CPU_ZERO(&mask);
             CPU_SET(bind_cpu_, &mask);
 
             if (sched_setaffinity(0, sizeof(mask), &mask) == 0)
                 bind_done_ = true;
+#endif
         }
 
+#ifndef __EMSCRIPTEN__
         if (master_cpu)
         {
             // set scheduler
@@ -151,6 +158,7 @@ private:
             sched_param.sched_priority = 10;
             sched_setscheduler(0, SCHED_RR, &sched_param);
         }
+#endif
 
         while (true)
         {
