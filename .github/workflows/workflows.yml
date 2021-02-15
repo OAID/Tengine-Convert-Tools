@@ -1,4 +1,4 @@
-name: Tengine-Convert-Tools-Actions
+name: tengine-convert-tools-actions
 
 on: [push, pull_request]
 

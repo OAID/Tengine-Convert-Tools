@@ -214,4 +214,11 @@ if(BUILD_MEGENGINE_SERIALIZER)
     target_link_libraries(tm_convert_tool ${MEGENGINE_LIB} ${DNNL_LIB} ${FLATBUFFERS_LIB})
 endif()
 
+# enable code coverage test
+if(BUILD_COVERAGE)
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
+    SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")    
+    target_link_libraries(tm_convert_tool ${CMAKE_PROJECT_NAME} -coverage -lgcov)
+endif()
+
 install (TARGETS tm_convert_tool DESTINATION bin)

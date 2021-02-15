@@ -1,0 +1,36 @@
+name: test-coverage
+
+on: [push, pull_request]
+
+jobs:
+  linux-gcc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: system-update
+      run: sudo apt-get update
+    - name: install-protobuf
+      run: sudo apt-get install libprotobuf-dev protobuf-compiler
+    - name: configure
+      run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=debug -DBUILD_COVERAGE=ON ..
+    - name: build
+      run: cmake --build build -j 2
+    - name: models
+      run: |
+        cd build
+        git clone https://github.com/BUG1989/tengine_test_data.git
+    - name: test-models-convert
+      run: |
+        cd build
+        ./tools/tm_convert_tool -f caffe -p ./tengine_test_data/MobileNetSSD.prototxt -m ./tengine_test_data/MobileNetSSD.caffemodel -o mssd.tmfile
+    - name: lcov-collect
+      run: |
+        cd build
+        lcov -d ./ -c -o lcov.info
+        lcov -r lcov.info '/usr/*' -o lcov.info
+        lcov --list lcov.info
+    - name: codecov
+      uses: codecov/codecov-action@v1.0.11
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: build/lcov.info
