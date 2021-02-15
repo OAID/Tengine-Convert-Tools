@@ -11,6 +11,8 @@ jobs:
       run: sudo apt-get update
     - name: install-protobuf
       run: sudo apt-get install libprotobuf-dev protobuf-compiler
+    - name: lcov
+      run: sudo apt-get install lcov      
     - name: configure
       run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=debug -DBUILD_COVERAGE=ON ..
     - name: build
