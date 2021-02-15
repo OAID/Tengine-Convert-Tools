@@ -1,4 +1,4 @@
-name: tengine-convert-tools-actions
+name: test-coverage
 
 on: [push, pull_request]
 
@@ -11,8 +11,10 @@ jobs:
       run: sudo apt-get update
     - name: install-protobuf
       run: sudo apt-get install libprotobuf-dev protobuf-compiler
+    - name: lcov
+      run: sudo apt-get install lcov      
     - name: configure
-      run: mkdir build && cd build && cmake ..
+      run: mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=debug -DBUILD_COVERAGE=ON ..
     - name: build
       run: cmake --build build -j 2
     - name: models
@@ -28,4 +30,15 @@ jobs:
         ./tools/tm_convert_tool -f mxnet -p ./tengine_test_data/retinaface.json -m ./tengine_test_data/retinaface.params -o retinaface_mx.tmfile
         ./tools/tm_convert_tool -f onnx  -m ./tengine_test_data/squeezenet.onnx -o squeezenet_onnx.tmfile
         ./tools/tm_convert_tool -f tflite -m ./tengine_test_data/mobilenet_v2.tflite -o mobilenet_v2_tflite.tmfile
-        ./tools/tm_convert_tool -f darknet -p ./tengine_test_data/yolov4-tiny.cfg -m ./tengine_test_data/yolov4-tiny.weights -o yolov4-tiny.tmfile      
+        ./tools/tm_convert_tool -f darknet -p ./tengine_test_data/yolov4-tiny.cfg -m ./tengine_test_data/yolov4-tiny.weights -o yolov4-tiny.tmfile
+    - name: lcov-collect
+      run: |
+        cd build
+        lcov -d ./ -c -o lcov.info
+        lcov -r lcov.info '/usr/*' -o lcov.info
+        lcov --list lcov.info
+    - name: codecov
+      uses: codecov/codecov-action@v1.0.11
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: build/lcov.info
