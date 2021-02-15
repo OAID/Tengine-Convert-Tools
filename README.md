@@ -66,7 +66,7 @@ To run the convert tool, running as following command, Note: The command example
 
 - NCNN
 ``` shell
-./install/bin/tm_convert_tool -f ncnn -p mobilenet.params -m mobilenet.bin -o mobilenet.tmfile
+./install/bin/tm_convert_tool -f ncnn -p mobilenet.param -m mobilenet.bin -o mobilenet.tmfile
 ```
 
 - MegEngine
