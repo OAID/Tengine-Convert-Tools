@@ -132,6 +132,9 @@
 #include "operator/shape.hpp"
 #include "operator/where.hpp"
 #include "operator/mish.hpp"
+#include "operator/softplus.hpp"
+#include "operator/reciprocal.hpp"
+
 using namespace TEngine;
 
 int operator_plugin_init(void)
@@ -243,8 +246,9 @@ int operator_plugin_init(void)
     RegisterOp<Shape>("Shape");
     RegisterOp<Where>("Where");
     RegisterOp<ReduceL2>("ReduceL2");
-    //add for yolov4
     RegisterOp<Mish>("Mish");
+    RegisterOp<Softplus>("Softplus");
+    RegisterOp<Reciprocal>("Reciprocal");
     // std::cout<<"OPERATOR PLUGIN INITED\n";
     return 0;
 }

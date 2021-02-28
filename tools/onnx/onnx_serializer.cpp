@@ -601,6 +601,27 @@ static bool LoadOnnxConvolutionOp(StaticGraph* graph, StaticNode* node, const on
             param.dilation_h = attr.ints(0);
             param.dilation_w = attr.ints(0);
         }
+        else if (attr.name() == "auto_pad")
+        {
+            const std::string& auto_pad = attr.s();
+
+            if (auto_pad == "NOTSET")
+            {
+                continue;
+            }
+            else if (auto_pad == "SAME_UPPER")
+            {
+                // ToDo
+                LOG_ERROR() << node->name << " attr.name:"<< attr.name() << ":SAME_UPPER todo implement.\n";
+            }
+            else if (auto_pad == "SAME_LOWER" || auto_pad == "VALID")
+            {
+                // ToDo
+                LOG_ERROR() << node->name << " attr.name:"<< attr.name() << ":SAME_LOWER todo implement.\n";
+            }
+            else
+                LOG_ERROR() << node->name << " attr.name:"<< attr.name() << ":" << auto_pad << ":not support.\n";
+        }
         else
             LOG_ERROR() << node->name << " attr.name:"<< attr.name() << "\n";
     }
@@ -900,6 +921,14 @@ static bool LoadOnnxSoftmax(StaticGraph* graph, StaticNode* node, const onnx::No
     return true;
 }
 
+static bool LoadOnnxSoftplus(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
+{
+    StaticOp* op = CreateStaticOp(graph, "Softplus");
+    SetNodeOp(node, op);
+
+    return true;
+}
+
 static bool LoadOnnxHardSwish(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
     StaticOp* op = CreateStaticOp(graph, "Hardswish");
@@ -966,21 +995,29 @@ static bool LoadOnnxInterp(StaticGraph* graph, StaticNode* node, const onnx::Nod
             const onnx::AttributeProto& attr = onnx_node.attribute(k);
             if (attr.name() == "scales")
             {
-                param.height_scale = attr.f();
-                param.width_scale = attr.f();
+                if (attr.floats_size() == 4)
+                {
+                    float num0 = attr.floats(0);
+                    float num1 = attr.floats(1);
+                    float num2 = attr.floats(2);
+                    float num3 = attr.floats(3);
+                    param.height_scale = num2 / num0;
+                    param.width_scale = num3 / num1;
+                }
+                else
+                {
+                    param.height_scale = attr.f();
+                    param.width_scale = attr.f();
+                }
             }
         }
     }
     else
     {
         const std::string& input_name = onnx_node.input(1);
-        // std::cout<<"tensor name:"<<input_name<<"\n";
         StaticTensor* tensor = FindTensor(graph, input_name);
         float* data = ( float* )GetConstTensorBuffer(tensor);
 
-        // int scales_size = tensor->dims[0];
-        // printf("scale size:%d\n", scales_size);
-        // printf("scale data:%f %f\n",data[0], data[1]);
         param.height_scale = data[2];
         param.width_scale = data[3];
     }
@@ -1048,17 +1085,17 @@ static bool LoadOnnxMul(StaticGraph* graph, StaticNode* node, const onnx::NodePr
 
     param.type = ELT_PROD;
 
-    for (int i = 0; i < onnx_node.input().size(); ++i)
-    {
-        StaticTensor* tensor = FindTensor(graph, onnx_node.input(i));
-        std::vector<int> dims = tensor->dims;
-        if (dims.size() == 0)
-        {
-            std::vector<int> new_dims;
-            new_dims.push_back(1);
-            SetTensorDim(tensor, new_dims);
-        }
-    }
+//    for (int i = 0; i < onnx_node.input().size(); ++i)
+//    {
+//        StaticTensor* tensor = FindTensor(graph, onnx_node.input(i));
+//        std::vector<int> dims = tensor->dims;
+//        if (dims.size() == 0)
+//        {
+//            std::vector<int> new_dims;
+//            new_dims.push_back(1);
+//            SetTensorDim(tensor, new_dims);
+//        }
+//    }
 
     StaticOp* op = CreateStaticOp(graph, "Eltwise");
 
@@ -1095,11 +1132,27 @@ static bool LoadOnnxDiv(StaticGraph* graph, StaticNode* node, const onnx::NodePr
 
     return true;
 }
+
 static bool LoadOnnxFloor(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
     EltwiseParam param = any_cast<EltwiseParam>(OpManager::GetOpDefParam("Eltwise"));
 
     param.type = ELT_FLOOR;
+
+    StaticOp* op = CreateStaticOp(graph, "Eltwise");
+
+    SetOperatorParam(op, param);
+
+    SetNodeOp(node, op);
+
+    return true;
+}
+
+static bool LoadOnnxSqrt(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
+{
+    EltwiseParam param = any_cast<EltwiseParam>(OpManager::GetOpDefParam("Eltwise"));
+
+    param.type = ELT_SQRT;
 
     StaticOp* op = CreateStaticOp(graph, "Eltwise");
 
@@ -2554,6 +2607,7 @@ static bool LoadOnnxTile(StaticGraph* graph, StaticNode* node, const onnx::NodeP
 
     return true;
 }
+
 static bool LoadOnnxCast(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
     CastParam param = any_cast<CastParam>(OpManager::GetOpDefParam("Cast"));
@@ -2586,6 +2640,7 @@ static bool LoadOnnxDepthToSpace(StaticGraph* graph, StaticNode* node, const onn
 
     return true;
 }
+
 static bool LoadOnnxLstm(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
     LSTMParam param = any_cast<LSTMParam>(OpManager::GetOpDefParam("LSTM"));
@@ -2615,6 +2670,16 @@ static bool LoadOnnxLstm(StaticGraph* graph, StaticNode* node, const onnx::NodeP
 
     return true;
 }
+
+static bool LoadOnnxReciprocal(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
+{
+    StaticOp* op = CreateStaticOp(graph, "Reciprocal");
+    SetNodeOp(node, op);
+
+    return true;
+}
+
+
 // To register all op loader...
 bool OnnxSerializerRegisterOpLoader(void)
 {
@@ -2635,6 +2700,7 @@ bool OnnxSerializerRegisterOpLoader(void)
     p_onnx->RegisterOpLoadMethod("Concat", op_load_t(LoadOnnxConcat));
     p_onnx->RegisterOpLoadMethod("Dropout", op_load_t(LoadOnnxDropout));
     p_onnx->RegisterOpLoadMethod("Softmax", op_load_t(LoadOnnxSoftmax));
+    p_onnx->RegisterOpLoadMethod("Softplus", op_load_t(LoadOnnxSoftplus));
     p_onnx->RegisterOpLoadMethod("BatchNormalization", op_load_t(LoadOnnxBN));
     p_onnx->RegisterOpLoadMethod("Add", op_load_t(LoadOnnxAdd));
     p_onnx->RegisterOpLoadMethod("Flatten", op_load_t(LoadOnnxFlatten));
@@ -2704,7 +2770,9 @@ bool OnnxSerializerRegisterOpLoader(void)
     p_onnx->RegisterOpLoadMethod("Cast", op_load_t(LoadOnnxCast));
     p_onnx->RegisterOpLoadMethod("DepthToSpace", op_load_t(LoadOnnxDepthToSpace));
     p_onnx->RegisterOpLoadMethod("LSTM", op_load_t(LoadOnnxLstm));
-    // p_onnx->RegisterOpLoadMethod("Constant", op_load_t(LoadOnnxConstant));
+    p_onnx->RegisterOpLoadMethod("Sqrt", op_load_t(LoadOnnxSqrt));
+    p_onnx->RegisterOpLoadMethod("Reciprocal", op_load_t(LoadOnnxReciprocal));
+
     return true;
 }
 

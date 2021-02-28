@@ -649,6 +649,14 @@ tm_uoffset_t SaveTmSoftmaxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Opera
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
+tm_uoffset_t SaveTmSoftplusOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_SOFTPLUS, TM2_NOT_SET);
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
+
 tm_uoffset_t SaveTmSplitOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
 {
     SplitParam* p = (dynamic_cast<Split*>(op))->GetParam();
@@ -1661,6 +1669,7 @@ tm_uoffset_t SaveTmTileOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
     SetTmOperator(&tm_op, TM2_OPTYPE_TILE, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_TileParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
+
 tm_uoffset_t SaveTmRELU1Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
 {
     TM2_Operator tm_op;
@@ -1668,6 +1677,7 @@ tm_uoffset_t SaveTmRELU1Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     SetTmOperator(&tm_op, TM2_OPTYPE_RELU1, TM2_NOT_SET);
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
+
 tm_uoffset_t SaveTmLogSoftmaxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
 {
     
@@ -1680,6 +1690,7 @@ tm_uoffset_t SaveTmLogSoftmaxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Op
     SetTmOperator(&tm_op, TM2_OPTYPE_LOGSOFTMAX, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_LogSoftmaxParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
+
 tm_uoffset_t SaveTmL2PoolOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
 {
     L2PoolParam* p = (dynamic_cast<L2Pool*>(op))->GetParam();
@@ -1702,11 +1713,20 @@ tm_uoffset_t SaveTmL2PoolOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operat
     SetTmOperator(&tm_op, TM2_OPTYPE_L2POOL, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_L2PoolParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
+
 tm_uoffset_t SaveTmL2NormalizationOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
 {
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     SetTmOperator(&tm_op, TM2_OPTYPE_L2NORMALIZATION, TM2_NOT_SET);
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
+
+tm_uoffset_t SaveTmReciprocalOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_RECIPROCAL, TM2_NOT_SET);
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
 
@@ -1918,6 +1938,10 @@ op_save_t SaveTmOpFunc(uint32_t op_type)
             return SaveTmL2PoolOp;
         case TM2_OPTYPE_RELU1:
             return SaveTmRELU1Op;
+        case TM2_OPTYPE_SOFTPLUS:
+            return SaveTmSoftplusOp;
+        case TM2_OPTYPE_RECIPROCAL:
+            return SaveTmReciprocalOp;
         default:
             LOG_ERROR() << "Operator #" << op_type << " not supported in tengine model yet\n";
             return nullptr;
