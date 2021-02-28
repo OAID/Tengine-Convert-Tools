@@ -579,6 +579,13 @@ bool LoadTmSoftmaxOp(StaticGraph* graph, StaticNode* node, void* const start_ptr
     return true;
 }
 
+bool LoadTmSoftplusOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
+{
+    StaticOp* op = CreateStaticOp(graph, TM2_OPSTR_SOFTPLUS);
+    SetNodeOp(node, op);
+    return true;
+}
+
 bool LoadTmSplitOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
 {
     const std::string& op_str = TM2_OPSTR_SPLIT;
@@ -1602,18 +1609,21 @@ bool LoadTmMishOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, c
     SetNodeOp(node, op);
     return true;
 }
+
 bool LoadTmL2NormalizationOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
 {
     StaticOp* op = CreateStaticOp(graph, TM2_OPSTR_L2NORMALIZATION);
     SetNodeOp(node, op);
     return true;
 }
+
 bool LoadTmReLU1Op(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
 {
     StaticOp* op = CreateStaticOp(graph, TM2_OPSTR_RELU1);
     SetNodeOp(node, op);
     return true;
 }
+
 bool LoadTmLogSoftmaxOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
 {
     const std::string& op_str = TM2_OPSTR_LOGSOFTMAX;
@@ -1627,6 +1637,7 @@ bool LoadTmLogSoftmaxOp(StaticGraph* graph, StaticNode* node, void* const start_
     SetNodeOp(node, op);
     return true;
 }
+
 bool LoadTmL2PoolOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
 {
     const std::string& op_str = TM2_OPSTR_L2POOL;
@@ -1647,6 +1658,13 @@ bool LoadTmL2PoolOp(StaticGraph* graph, StaticNode* node, void* const start_ptr,
 
     StaticOp* op = CreateStaticOp(graph, TM2_OPSTR_L2POOL);
     SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+}
+
+bool LoadTmReciprocalOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
+{
+    StaticOp* op = CreateStaticOp(graph, TM2_OPSTR_RECIPROCAL);
     SetNodeOp(node, op);
     return true;
 }
@@ -1858,7 +1876,11 @@ op_load_t LoadTmOpFunc(uint32_t op_type)
         case TM2_OPTYPE_L2POOL:
             return LoadTmL2PoolOp;
         case TM2_OPTYPE_L2NORMALIZATION:
-            return LoadTmL2NormalizationOp;      
+            return LoadTmL2NormalizationOp;
+        case TM2_OPTYPE_SOFTPLUS:
+            return LoadTmSoftplusOp;
+        case TM2_OPTYPE_RECIPROCAL:
+            return LoadTmReciprocalOp;
         default:
             LOG_ERROR() << "Operator #" << op_type << " not supported in tengine model yet\n";
             return nullptr;
@@ -2087,6 +2109,10 @@ std::string GetOpStr(uint32_t op_type)
             return std::string(TM2_OPSTR_L2NORMALIZATION);
         case TM2_OPTYPE_L2POOL:
             return std::string(TM2_OPSTR_L2POOL);
+        case TM2_OPTYPE_SOFTPLUS:
+            return std::string(TM2_OPSTR_SOFTPLUS);
+        case TM2_OPTYPE_RECIPROCAL:
+            return std::string(TM2_OPSTR_RECIPROCAL);
         default:
             LOG_ERROR() << "Get operator string failed\n";
             return std::string("");

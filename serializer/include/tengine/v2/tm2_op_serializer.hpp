@@ -120,6 +120,8 @@
 #include "operator/log_softmax.hpp"
 #include "operator/l2normalization.hpp"
 #include "operator/relu1.hpp"
+#include "operator/softplus.hpp"
+#include "operator/reciprocal.hpp"
 
 #include "operator/batch_norm_param.hpp"
 #include "operator/concat_param.hpp"
@@ -310,6 +312,8 @@ bool LoadTmL2NormalizationOp(StaticGraph* graph, StaticNode* node, void* const s
 bool LoadTmL2PoolOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 bool LoadTmLogSoftmaxOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 bool LoadTmReLU1Op(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
+bool LoadTmSoftplusOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
+bool LoadTmReciprocalOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 
 
 op_save_t SaveTmOpFunc(uint32_t op_type);
@@ -413,6 +417,8 @@ tm_uoffset_t SaveTmL2NormalizationOp(void* const start_ptr, tm_uoffset_t* cur_po
 tm_uoffset_t SaveTmL2PoolOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 tm_uoffset_t SaveTmLogSoftmaxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 tm_uoffset_t SaveTmReLU1Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
+tm_uoffset_t SaveTmSoftplusOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
+tm_uoffset_t SaveTmReciprocalOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 
 template <typename T> const T* GetTmPtr(void* const start_ptr, tm_uoffset_t tm_offset)
 {
