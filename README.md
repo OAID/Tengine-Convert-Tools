@@ -32,6 +32,18 @@ make -j`nproc` && make install
 
 ## Run Convert Tool
 
+### How to use
+
+```
+$ ./tm_convert_tool -h
+[Convert Tools Info]: optional arguments:
+        -h    help            show this help message and exit
+        -f    input type      path to input float32 tmfile
+        -p    input structure path to the network structure of input model(*.prototxt, *.symbol, *.cfg)
+        -m    input params    path to the network params of input model(*.caffemodel, *.params, *.weight, *.pb, *.onnx, *.tflite)
+        -o    output model    path to output fp32 tmfile
+```
+
 To run the convert tool, running as following command, Note: The command examples are based on `mobilenet` model:
 
 - Caffe

@@ -30,9 +30,20 @@
 
 #include "tengine_c_api.h"
 
+const char* help_params = "[Convert Tools Info]: optional arguments:\n"
+                      "\t-h    help            show this help message and exit\n"
+                      "\t-f    input type      path to input float32 tmfile\n"
+                      "\t-p    input structure path to the network structure of input model(*.prototxt, *.symbol, *.cfg)\n"
+                      "\t-m    input params    path to the network params of input model(*.caffemodel, *.params, *.weight, *.pb, *.onnx, *.tflite)\n"
+                      "\t-o    output model    path to output fp32 tmfile\n";
+
+const char* example_params = "[Convert Tools Info]: example arguments:\n"
+                             "\t./tm_convert_tool -f caffe -p ./mobilenet.prototxt -m ./mobilenet.caffemodel -o ./mobilenet.tmfile\n";
+
 void show_usage()
 {
-    std::cout << "[Usage]: [-h] [-f file_format] [-p proto_file] [-m model_file] [-o output_tmfile]\n";
+    fprintf(stderr, "%s\n", help_params);
+    fprintf(stderr, "%s\n", example_params);
 }
 
 int main(int argc, char* argv[])
@@ -164,7 +175,6 @@ int main(int argc, char* argv[])
     if (graph == nullptr)
     {
         std::cout << "Create graph failed\n";
-        // std::cout << "errno: " << get_tengine_errno() << "\n";
         return -1;
     }
 
