@@ -504,9 +504,10 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
             continue;
 
         const std::string& output_name = onnx_node.output(i);
-	if(output_name == ""){
-	    continue;
-	}
+        
+        if(output_name == "")
+            continue;
+        
         StaticTensor* tensor = CreateStaticTensor(graph, output_name);
 
         SetTensorDataType(tensor, DataType::GetTypeID("float32"));
@@ -1130,7 +1131,7 @@ static bool LoadOnnxMul(StaticGraph* graph, StaticNode* node, const onnx::NodePr
     for(int i = 0; i < onnx_node.input().size(); ++i)
     {
         StaticTensor* tensor = FindTensor(graph, onnx_node.input(i));
-		std::vector<int> dims = tensor->dims;
+        std::vector<int> dims = tensor->dims;
         if(dims.size() == 0)
         {
             std::vector<int> new_dims;
@@ -2869,7 +2870,7 @@ bool OnnxSerializerRegisterOpLoader(void)
     p_onnx->RegisterOpLoadMethod("DepthToSpace", op_load_t(LoadOnnxDepthToSpace));
     p_onnx->RegisterOpLoadMethod("LSTM", op_load_t(LoadOnnxLstm));
     p_onnx->RegisterOpLoadMethod("Sqrt", op_load_t(LoadOnnxSqrt));
-	p_onnx->RegisterOpLoadMethod("Resize", op_load_t(LoadOnnxResize));
+    p_onnx->RegisterOpLoadMethod("Resize", op_load_t(LoadOnnxResize));
     p_onnx->RegisterOpLoadMethod("Reciprocal", op_load_t(LoadOnnxReciprocal));
 
     return true;
