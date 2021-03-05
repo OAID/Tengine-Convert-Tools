@@ -18,23 +18,22 @@
  */
 
 /*
- * Copyright (c) 2019, Open AI Lab
- * Author: ddzhao@openailab.com
+ * Copyright (c) 2021, OPEN AI LAB
+ * Author: qtang@openailab.com
  */
 #ifndef __HARDSWISH_HPP__
 #define __HARDSWISH_HPP__
 
 #include "operator.hpp"
-#include "hardswish_param.hpp"
 
 namespace TEngine {
 
-class Hardswish : public OperatorWithParam<Hardswish, HardswishParam>
+class Hardswish : public OperatorNoParam<Hardswish>
 {
 public:
     Hardswish()
     {
-        name_ = "Hardswish";
+        name_ = "HardSwish";
     }
     Hardswish(const Hardswish& src) = default;
     virtual ~Hardswish(){};

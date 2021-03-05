@@ -178,7 +178,6 @@
 #include "operator/instancenorm_param.hpp"
 #include "operator/mvn_param.hpp"
 #include "operator/cast_param.hpp"
-#include "operator/hardswish_param.hpp"
 #include "operator/interp_param.hpp"
 #include "operator/selu_param.hpp"
 #include "operator/elu_param.hpp"

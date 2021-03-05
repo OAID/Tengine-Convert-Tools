@@ -47,7 +47,6 @@
 #include "operator/reshape_param.hpp"
 #include "operator/permute_param.hpp"
 #include "operator/clip_param.hpp"
-#include "operator/hardswish_param.hpp"
 #include "operator/elu_param.hpp"
 #include "operator/interp_param.hpp"
 #include "operator/transpose_param.hpp"

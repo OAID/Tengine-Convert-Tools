@@ -1296,17 +1296,12 @@ tm_uoffset_t SaveTmCastOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator
 }
 
 tm_uoffset_t SaveTmHardSwishOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
-    HardswishParam* p = (dynamic_cast<Hardswish*>(op))->GetParam();
-    TM2_HardSwishParam tm_param;
-    memset(&tm_param, 0, sizeof(TM2_HardSwishParam));
-    tm_param.alpha = p->alpha;
-    tm_param.beta = p->beta;
-
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_CAST, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_HardSwishParam)));
+    SetTmOperator(&tm_op, TM2_OPTYPE_HARDSWISH, TM2_NOT_SET);
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
+
 tm_uoffset_t SaveTmInterpOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op){
     InterpParam* p = (dynamic_cast<Interp*>(op))->GetParam();
     TM2_InterpParam tm_param;
