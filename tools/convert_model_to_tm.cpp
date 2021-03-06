@@ -82,6 +82,11 @@ int main(int argc, char* argv[])
         }
     }
 
+    /* version */
+    fprintf(stderr, "\n---- Tengine Convert Tool ---- \n");
+    fprintf(stderr, "\nVersion     : v1.0, %s %s\n", __TIME__, __DATE__);
+    fprintf(stderr, "Status      : float32\n");
+
     // Check the input parameters
 
     if (file_format.empty())

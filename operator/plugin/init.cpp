@@ -204,7 +204,7 @@ int operator_plugin_init(void)
     RegisterOp<BatchToSpaceND>("BatchToSpaceND");
     RegisterOp<SpaceToBatchND>("SpaceToBatchND");
     RegisterOp<Absval>("Absval");
-    RegisterOp<Hardswish>("Hardswish");
+    RegisterOp<Hardswish>("HardSwish");
     RegisterOp<Interp>("Interp");
     RegisterOp<Selu>("Selu");
     RegisterOp<L2Normalization>("L2Normalization");

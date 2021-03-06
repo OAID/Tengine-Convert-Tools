@@ -1233,16 +1233,7 @@ bool LoadTmCastOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, c
     return true;
 }
 bool LoadTmHardSwishOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op){
-    const std::string& op_str = TM2_OPSTR_HARDSWISH;
-
-    HardswishParam param = any_cast<HardswishParam>(OpManager::GetOpDefParam(op_str));
-    const TM2_HardSwishParam* tm_param = GetTmPtr<TM2_HardSwishParam>(start_ptr, tm_op->offset_t_param);
-
-    param.alpha = tm_param->alpha;
-    param.beta = tm_param->beta;
-
-    StaticOp* op = CreateStaticOp(graph, op_str);
-    SetOperatorParam(op, param);
+    StaticOp* op = CreateStaticOp(graph, TM2_OPSTR_HARDSWISH);
     SetNodeOp(node, op);
     return true;
 }

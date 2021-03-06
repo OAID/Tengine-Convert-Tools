@@ -18,8 +18,8 @@
  */
 
 /*
- * Copyright (c) 2019, Open AI Lab
- * Author: ddzhao@openailab.com
+ * Copyright (c) 2021, OPEN AI LAB
+ * Author: qtang@openailab.com
  */
 #include "operator/hardswish.hpp"
 
@@ -27,11 +27,7 @@ namespace TEngine {
 
 void Hardswish::SetSchema(void)
 {
-    Input({"input:float32"})
-        .Output({"output:float32"})
-        .SetAttr("alpha", 0.2f)
-        .SetAttr("beta", 0.5f)
-        .SetDoc(R"DOC(Hardswish Operator)DOC");
+    Input({"input:float32"}).Output({"output:float32"}).SetDoc(R"DOC(HardSwish Operator)DOC");
 }
 
 }    // namespace TEngine

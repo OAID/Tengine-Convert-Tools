@@ -47,7 +47,6 @@
 #include "operator/reshape_param.hpp"
 #include "operator/permute_param.hpp"
 #include "operator/clip_param.hpp"
-#include "operator/hardswish_param.hpp"
 #include "operator/elu_param.hpp"
 #include "operator/interp_param.hpp"
 #include "operator/transpose_param.hpp"
@@ -974,22 +973,7 @@ static bool LoadOnnxSoftplus(StaticGraph* graph, StaticNode* node, const onnx::N
 
 static bool LoadOnnxHardSwish(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
-    StaticOp* op = CreateStaticOp(graph, "Hardswish");
-
-    HardswishParam param = any_cast<HardswishParam>(OpManager::GetOpDefParam("Hardswish"));
-
-    for (int k = 0; k < onnx_node.attribute_size(); k++)
-    {
-        const onnx::AttributeProto& attr = onnx_node.attribute(k);
-
-        if (attr.name() == "alpha")
-            param.alpha = attr.f();
-        else if (attr.name() == "beta")
-            param.beta = attr.f();
-    }
-
-    SetOperatorParam(op, param);
-
+    StaticOp* op = CreateStaticOp(graph, "HardSwish");
     SetNodeOp(node, op);
 
     return true;
