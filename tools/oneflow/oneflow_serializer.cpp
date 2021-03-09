@@ -610,6 +610,19 @@ DEFINE_ONEFLOW_CONVERTER(clip_by_scalar)
     return true;
 }
 
+DEFINE_ONEFLOW_CONVERTER(flatten)
+{
+    StaticOp* op = CreateStaticOp(graph, "Flatten");
+
+    FlattenParam param = any_cast<FlattenParam>(OpManager::GetOpDefParam("Flatten"));
+    param.axis = 1;
+    SetOperatorParam(op, param);
+
+    SetNodeOp(node, op);
+
+    return true;
+}
+
 DEFINE_ONEFLOW_CONVERTER(reshape)
 {
     StaticOp* op = CreateStaticOp(graph, "Reshape");
