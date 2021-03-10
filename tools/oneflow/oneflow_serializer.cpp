@@ -615,7 +615,8 @@ DEFINE_ONEFLOW_CONVERTER(flatten)
     StaticOp* op = CreateStaticOp(graph, "Flatten");
 
     FlattenParam param = any_cast<FlattenParam>(OpManager::GetOpDefParam("Flatten"));
-    param.axis = 1;
+    param.axis = GetAttr<int32_t>(oneflow_node,"start_dim");
+    param.end_axis = GetAttr<int32_t>(oneflow_node,"end_dim");
     SetOperatorParam(op, param);
 
     SetNodeOp(node, op);
