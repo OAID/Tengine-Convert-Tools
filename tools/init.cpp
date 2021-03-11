@@ -51,7 +51,9 @@
 namespace TEngine {
 
 extern bool OnnxSerializerRegisterOpLoader();
+#ifdef BUILD_ONEFLOW_SERIALIZER
 extern bool OneFlowSerializerRegisterOpLoader();
+#endif
 extern bool CaffeSerializerRegisterOpLoader();
 extern bool MxnetSerializerRegisterOpLoader();
 extern bool TFSerializerRegisterOpLoader();
@@ -93,12 +95,14 @@ int serializer_plugin_init(void)
     SerializerManager::SafeAdd("onnx", SerializerPtr(onnx_serializer));
     OnnxSerializerRegisterOpLoader();
 
-    // ONNX
+#ifdef BUILD_ONEFLOW_SERIALIZER
+    // OneFlow
     factory->RegisterInterface<OneFlowSerializer>("oneflow");
     auto oneflow_serializer = factory->Create("oneflow");
 
     SerializerManager::SafeAdd("oneflow", SerializerPtr(oneflow_serializer));
     OneFlowSerializerRegisterOpLoader();
+#endif
 
     // MXNET
     factory->RegisterInterface<MxnetSerializer>("mxnet");
