@@ -31,7 +31,9 @@
 
 #include "caffe_serializer.hpp"
 #include "onnx_serializer.hpp"
+#ifdef BUILD_ONEFLOW_SERIALIZER
 #include "oneflow_serializer.hpp"
+#endif
 #include "mxnet_serializer.hpp"
 #include "tf_serializer.hpp"
 #include "tf_lite_serializer.hpp"
