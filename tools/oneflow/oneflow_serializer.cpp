@@ -616,7 +616,11 @@ DEFINE_ONEFLOW_CONVERTER(flatten)
 
     FlattenParam param = any_cast<FlattenParam>(OpManager::GetOpDefParam("Flatten"));
     param.axis = GetAttr<int32_t>(oneflow_node,"start_dim");
-    param.end_axis = GetAttr<int32_t>(oneflow_node,"end_dim");
+    auto end_axis = GetAttr<int32_t>(oneflow_node,"end_dim");
+    if (end_axis != -1) {
+        return false;
+    }
+    param.end_axis = end_axis;
     SetOperatorParam(op, param);
 
     SetNodeOp(node, op);
