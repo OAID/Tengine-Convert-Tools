@@ -54,7 +54,7 @@ option(BUILD_TENGINE_SERIALIZER     "Tengine serializer"        ON)
 # some basic options
 option(BUILD_COVERAGE "build for coverage" OFF)
 
-if (BUILD_ONEFLOW_SERIALIZER AND (${CMAKE_VERSION} VERSION_LESS "3.7.0"))
+if (BUILD_ONEFLOW_SERIALIZER AND (${CMAKE_VERSION} VERSION_LESS "3.16.0"))
     message(FATAL_ERROR "Please upgrade your cmake (maybe by \"pip3 install -U cmake\") or disable OneFlow serializer by \"cmake -DBUILD_ONEFLOW_SERIALIZER=OFF ..\"")
 endif()
 
