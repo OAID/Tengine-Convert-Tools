@@ -230,6 +230,7 @@ struct MemPool
 
 bool CPURunner::Prerun(Subgraph* sub_graph)
 {
+    printf("cpu runner \n");
     if (!BindNodeOps(sub_graph))
         return false;
 
@@ -239,7 +240,7 @@ bool CPURunner::Prerun(Subgraph* sub_graph)
     for (unsigned int i = 0; i < sub_graph->seq_nodes.size(); i++)
     {
         Node* node = sub_graph->seq_nodes[i];
-
+        printf("%s \n", node->GetName().c_str());
         if (!node->ExistAttr(ATTR_NODE_OPS))
             continue;
 
@@ -343,9 +344,11 @@ bool CPURunner::OptimizeGraph(Subgraph* optimized_graph)
 {
     GraphOptimizerManager::RunOpt("BNScale", optimized_graph);
     GraphOptimizerManager::RunOpt("FcBn", optimized_graph);
+    GraphOptimizerManager::RunOpt("UnsEltConv", optimized_graph);
     GraphOptimizerManager::RunOpt("ConvBN", optimized_graph);
     GraphOptimizerManager::RunOpt("ConvReLu", optimized_graph);
     GraphOptimizerManager::RunOpt("ConvReLu6", optimized_graph);
+
 
     return true;
 }
