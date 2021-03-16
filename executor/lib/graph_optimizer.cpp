@@ -45,6 +45,7 @@ static bool GraphFuseConvReLu6(Graph* graph, GraphOptimizer* opt);
 static bool GraphFuseRelu6(Graph* graph, GraphOptimizer* opt);
 static void AddConstNodeToSubGraph(Subgraph* graph, Tensor* tensor, Node* fused_node, int fused_port_index);
 static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt);
+static bool GraphFusedConvUnsqueeze(Graph* graph, GraphOptimizer* opt);
 
 static bool Weight_Bn(Subgraph* graph, Node* ConvNode, float* mean, float* var, float* gamma, float* beta, float eps,
                       float rescale_factor, Tensor* bias_tensor)
@@ -863,6 +864,135 @@ static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt)
     return true;
 }
 
+
+static bool GraphFusedConvUnsqueeze(Graph* graph, GraphOptimizer* opt)
+{
+    int node_number = graph->seq_nodes.size();
+    std::vector<Subgraph*> orig_sub;
+    std::vector<int> op_flag;
+
+    for (int i = 0; i < node_number; i++)
+    {
+        Node* Elt_node = graph->seq_nodes[i];
+        Operator* op = Elt_node->GetOp();
+
+        if (op->GetName() != "Eltwise")
+            continue;
+
+        Tensor* input_tensor_0;
+        Tensor* input_tensor_1;
+        Node* Us_node;
+        Node* Conv_node;
+
+        input_tensor_1 = Elt_node->GetInputTensor(0);
+        input_tensor_0 = Elt_node->GetInputTensor(1);
+        Us_node = input_tensor_0->producer->owner;
+        Conv_node = input_tensor_1->producer->owner;
+        Operator* Us_op = Us_node->GetOp();
+        Operator* Conv_op = Conv_node->GetOp();
+
+        if ((Us_op->GetName() != "Unsqueeze" && Conv_op->GetName() != "Convolution") || (Us_op->GetName() != "Unsqueeze" && Conv_op->GetName() != "FullyConnected"))
+            continue;
+
+
+        if(Us_op->GetName() == "Unsqueeze" && Conv_op->GetName() == "Convolution"){
+            op_flag.push_back(1);
+        }
+        if(Us_op->GetName() == "Unsqueeze" && Conv_op->GetName() == "FullyConnected"){
+            op_flag.push_back(2);
+        }
+        /*Create a subgrah represent the chain*/
+        Subgraph* sub = new Subgraph("uns_elt_conv_chain");
+
+        sub->seq_nodes.push_back(Conv_node);
+        sub->seq_nodes.push_back(Us_node);
+        sub->seq_nodes.push_back(Elt_node);
+
+        sub->input_nodes.push_back(Conv_node);
+        sub->input_nodes.push_back(Us_node);
+        sub->output_nodes.push_back(Elt_node);
+
+        /* add const node into seq nodes */
+        for (unsigned int i = 1; i < Conv_node->GetInputNum(); i++)
+        {
+            Tensor* tensor = Conv_node->GetInputTensor(i);
+            sub->seq_nodes.push_back(tensor->producer->owner);
+        }
+        for (unsigned int i = 1; i < Elt_node->GetInputNum(); i++)
+        {
+            Tensor* tensor = Elt_node->GetInputTensor(i);
+            sub->seq_nodes.push_back(tensor->producer->owner);
+        }
+        orig_sub.push_back(sub);
+    }
+
+    /*replace the nodes of the graph*/
+    for (unsigned int i = 0; i < orig_sub.size(); i++)
+    {
+        Subgraph fused("fused");
+        Subgraph* orig = orig_sub[i];
+
+        Node* orig_output = orig->output_nodes[0];
+        Node* orig_input = orig->input_nodes[0];
+        Node* orig_input_1 = orig->input_nodes[1];
+
+        std::string node_name = orig_input->GetName();
+
+        /*create new Node node*/
+        Node* fused_node = new Node(node_name);
+        Operator* new_conv_op = NULL;
+        if(op_flag[i] == 1){
+            new_conv_op = OpManager::CreateOp("Convolution");
+        }
+        if(op_flag[i] == 2){
+            new_conv_op = OpManager::CreateOp("FullyConnected");
+        }
+        fused_node->SetDynamicShape(orig_input->IsDynamicShape());
+        fused_node->MergeAttr(orig_output);
+        fused_node->MergeAttr(orig_input);
+        fused_node->SetOp(new_conv_op);
+        /*copy conv param*/
+        fused_node->SetAttr("Fused.Batch", true);
+        if(op_flag[i] == 1){
+            Convolution* fused_op = dynamic_cast<Convolution*>(new_conv_op);
+            ConvParam* fused_param = fused_op->GetParam();
+            Convolution* orig_op = dynamic_cast<Convolution*>(orig_input->GetOp());
+            ConvParam* orig_param = orig_op->GetParam();
+            *fused_param = *orig_param;
+        }
+        if(op_flag[i] == 2){
+            FullyConnected* fused_op = dynamic_cast<FullyConnected*>(new_conv_op);
+            FCParam* fused_param = fused_op->GetParam();
+            FullyConnected* orig_op = dynamic_cast<FullyConnected*>(orig_input->GetOp());
+            FCParam* orig_param = orig_op->GetParam();
+            *fused_param = *orig_param;
+        }
+        Tensor* output_tensor = orig_output->GetOutputTensor(0);
+        fused_node->AddOutputTensor(output_tensor);
+
+        Tensor* input_tensor = orig_input->GetInputTensor(0);
+        Tensor* input_tensor_1 = orig_input_1->GetInputTensor(0);
+        fused_node->AddInputTensor(input_tensor);
+        fused.seq_nodes.push_back(fused_node);
+        fused.input_nodes.push_back(fused_node);
+        fused.output_nodes.push_back(fused_node);
+        fused.SetNodeOwner(fused_node);
+
+        /* create new const node for convolution */
+        Tensor* weight = orig_input->GetInputTensor(1);
+        AddConstNodeToSubGraph(&fused, weight, fused_node, 1);
+        AddConstNodeToSubGraph(&fused, input_tensor_1, fused_node, 2);
+        graph->Replace(orig, &fused);
+    }
+    /* release orig_sub */
+    for (unsigned int i = 0; i < orig_sub.size(); i++)
+    {
+        Subgraph* orig = orig_sub[i];
+        delete orig;
+    }
+    return true;
+}
+
 bool GraphOptimizerManager::RunOpt(const std::string& name, Graph* graph)
 {
     if (!Find(name))
@@ -905,6 +1035,11 @@ void GraphOptimizerManager::Init(void)
     opt = new GraphOptimizer();
     opt->name = "FcBn";
     opt->optimizer = graph_opt_t(GraphFusedFcBn);
+    Add(opt->name, opt);
+
+    opt = new GraphOptimizer();
+    opt->name = "UnsEltConv";
+    opt->optimizer = graph_opt_t(GraphFusedConvUnsqueeze);
     Add(opt->name, opt);
 }
 
