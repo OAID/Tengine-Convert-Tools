@@ -108,6 +108,12 @@ bool Slice::InferShape(const std::vector<TEngine::TShape>& ishape, std::vector<T
                 {
                     out_dim[i] = input_dim[i] + (slice_end - param_.begin);
                 }
+
+                if (param_.step > 1)
+                {
+                    out_dim[i] /= (out_dim[i] - 1) / param_.step + 1;
+                }
+
                 if (0 == out_dim[i])
                     out_dim[i] = input_dim[i];
             }

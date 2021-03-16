@@ -36,6 +36,7 @@ struct SliceParam : public NamedParam
     std::vector<int> size_;
     int begin;
     int end;
+    int step;
     bool ismxnet;
     bool iscaffe;
     bool isonnx;
@@ -46,6 +47,7 @@ struct SliceParam : public NamedParam
         DECLARE_PARSER_ENTRY(axis);
         DECLARE_PARSER_ENTRY(begin);
         DECLARE_PARSER_ENTRY(end);
+        DECLARE_PARSER_ENTRY(step);
         DECLARE_PARSER_ENTRY(ismxnet);
         DECLARE_PARSER_ENTRY(isonnx);
         DECLARE_PARSER_ENTRY(isncnn);

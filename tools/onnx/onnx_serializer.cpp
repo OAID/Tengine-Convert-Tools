@@ -446,6 +446,7 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
         if(input_name == ""){
             continue;
         }
+
         StaticTensor* tensor = FindTensor(graph, input_name);
         StaticTensor* new_tensor = nullptr;
         // std::vector<std::string>::iterator iter = std::find(node_name.begin(), node_name.end(),tensor->name);
@@ -1244,25 +1245,50 @@ static bool LoadOnnxSlice(StaticGraph* graph, StaticNode* node, const onnx::Node
 {
     SliceParam param = any_cast<SliceParam>(OpManager::GetOpDefParam("Slice"));
 
-    for (int k = 0; k < onnx_node.attribute_size(); k++)
+    if (onnx_node.input_size() == 1)
     {
-        const onnx::AttributeProto& attr = onnx_node.attribute(k);
-        if (attr.name() == "axes")
+        for (int k = 0; k < onnx_node.attribute_size(); k++)
         {
-            param.axis = attr.ints(0);
-        }
-        else if (attr.name() == "ends")
-        {
-            long long end = attr.ints(0);
-            if (end > INT_MAX)
-                end = INT_MAX;
-            param.end = ( int )end;
-        }
-        else if (attr.name() == "starts")
-        {
-            param.begin = attr.ints(0);
+            const onnx::AttributeProto& attr = onnx_node.attribute(k);
+            if (attr.name() == "axes")
+            {
+                param.axis = attr.ints(0);
+            }
+            else if (attr.name() == "ends")
+            {
+                long long end = attr.ints(0);
+                if (end > INT_MAX)
+                    end = INT_MAX;
+                param.end = ( int )end;
+            }
+            else if (attr.name() == "starts")
+            {
+                param.begin = attr.ints(0);
+            }
         }
     }
+    else
+    {
+        StaticTensor* node_tensor = nullptr;
+        node_tensor = FindTensor(graph, onnx_node.input(1));
+        param.begin = (int)(*(int64_t*)(GetConstTensorBuffer(node_tensor)));
+
+        node_tensor = FindTensor(graph, onnx_node.input(2));
+        param.end = (int)(*(int64_t*)(GetConstTensorBuffer(node_tensor)));
+
+        if (onnx_node.input_size() >= 4)
+        {
+            node_tensor = FindTensor(graph, onnx_node.input(3));
+            param.axis = (int)(*(int64_t*)(GetConstTensorBuffer(node_tensor)));
+        }
+
+        if (onnx_node.input_size() >= 5)
+        {
+            node_tensor = FindTensor(graph, onnx_node.input(4));
+            param.step = (int)(*(int64_t*)(GetConstTensorBuffer(node_tensor)));
+        }
+    }
+
     param.iscaffe = false;
     param.ismxnet = false;
     param.isonnx = true;
