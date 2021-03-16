@@ -583,6 +583,7 @@ tm_uoffset_t SaveTmSliceOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operato
     if(!tm_param.iscaffe){
         tm_param.begin = p->begin;
         tm_param.end = p->end;
+        tm_param.step = p->step;
     }
     if((p->slice_point_).size())
     {
