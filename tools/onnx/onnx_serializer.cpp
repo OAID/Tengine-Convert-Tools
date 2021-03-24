@@ -470,8 +470,6 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
             continue;
         }
 
-        std::string node_name_tmp = onnx_node.name();
-
         StaticTensor* tensor = FindTensor(graph, input_name);
         StaticTensor* new_tensor = nullptr;
         // std::vector<std::string>::iterator iter = std::find(node_name.begin(), node_name.end(),tensor->name);
@@ -638,7 +636,12 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
 
         if (onnx_op_name == "Constant")
             continue;
-        StaticNode* node = CreateStaticNode(graph, onnx_node.name());
+
+        StaticNode* node = nullptr;
+        if (onnx_node.name().empty())
+            node = CreateStaticNode(graph, onnx_node.output(0));
+        else
+            node = CreateStaticNode(graph, onnx_node.name());
 
         if (!LoadNode(graph, node, onnx_node))
             break;
