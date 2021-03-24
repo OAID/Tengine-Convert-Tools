@@ -259,6 +259,19 @@ void OnnxSerializer::LoadConstNode(const onnx::GraphProto& onnx_graph, StaticGra
 
 bool OnnxSerializer::LoadConstTensor(StaticGraph* graph, const onnx::GraphProto& onnx_graph)
 {
+    /* record the necessary const tesnors */
+    std::vector<std::string> tensor_check;
+    for (int i = 0; i < onnx_graph.node_size(); i++)
+    {
+        const onnx::NodeProto& onnx_node = onnx_graph.node(i);
+
+        for (int j = 0; j < onnx_node.input_size(); j++)
+        {
+            const std::string& input_name = onnx_node.input(j);
+            tensor_check.push_back(input_name);
+        }
+    }
+
     int const_tensor_number = onnx_graph.initializer_size();
 
     LoadConstNode(onnx_graph, graph);
@@ -269,22 +282,32 @@ bool OnnxSerializer::LoadConstTensor(StaticGraph* graph, const onnx::GraphProto&
         const onnx::TensorProto& onnx_tensor = onnx_graph.initializer(i);
 
         std::string onnx_tensor_name = onnx_tensor.name();
-        std::vector<std::string>::iterator iter=std::find(tensor_name_list.begin(), tensor_name_list.end(), onnx_tensor.name());
-        if(iter==tensor_name_list.end()){
+        std::vector<std::string>::iterator iter = std::find(tensor_name_list.begin(), tensor_name_list.end(), onnx_tensor.name());
+
+        if (iter == tensor_name_list.end())
+        {
             tensor_name_list.push_back(onnx_tensor_name);
-        } else {
+        }
+        else
+        {
             onnx_tensor_name = onnx_tensor_name + "_1";
         }
+
+        /* remove the unused const tesnor */
+        auto it = find(tensor_check.begin(), tensor_check.end(), onnx_tensor_name);
+        if (it == tensor_check.end())
+            continue;
+
         StaticTensor* tensor = CreateStaticConstTensor(graph, onnx_tensor_name);
         std::vector<int> dims;
 
         int dim_size = onnx_tensor.dims_size();
         int tensor_size = 1;
 
-        for (int l = 0; l < dim_size; l++)
+        for (int j = 0; j < dim_size; j++)
         {
-            tensor_size *= onnx_tensor.dims(l);
-            dims.push_back(onnx_tensor.dims(l));
+            tensor_size *= onnx_tensor.dims(j);
+            dims.push_back(onnx_tensor.dims(j));
         }
 
         if (dims.empty())
@@ -307,9 +330,9 @@ bool OnnxSerializer::LoadConstTensor(StaticGraph* graph, const onnx::GraphProto&
                 int64_t* mem_buf = ( int64_t* )std::malloc(tensor_size);
                 int64_t* raw_data = ( int64_t* )onnx_tensor.raw_data().data();
 
-                for (unsigned int i = 0; i < tensor_size / sizeof(int64_t); i++)
+                for (unsigned int j = 0; j < tensor_size / sizeof(int64_t); j++)
                 {
-                    mem_buf[i] = raw_data[i];
+                    mem_buf[j] = raw_data[j];
                 }
                 SetConstTensorBuffer(tensor, mem_buf);
             }
@@ -322,9 +345,9 @@ bool OnnxSerializer::LoadConstTensor(StaticGraph* graph, const onnx::GraphProto&
                 uint8_t* mem_buf = ( uint8_t* )std::malloc(tensor_size);
                 uint8_t* raw_data = ( uint8_t* )onnx_tensor.raw_data().c_str();
 
-                for (int i = 0; i < tensor_size; i++)
+                for (int j = 0; j < tensor_size; j++)
                 {
-                    mem_buf[i] = raw_data[i];
+                    mem_buf[j] = raw_data[j];
                 }
                 SetConstTensorBuffer(tensor, mem_buf);
             }
@@ -338,8 +361,8 @@ bool OnnxSerializer::LoadConstTensor(StaticGraph* graph, const onnx::GraphProto&
 
                 float* mem_buf = ( float* )std::malloc(tensor_size * sizeof(float));
                 const float* float_data = onnx_tensor.float_data().data();
-                for (int i = 0; i < tensor_size; i++)
-                    mem_buf[i] = float_data[i];
+                for (int j = 0; j < tensor_size; j++)
+                    mem_buf[j] = float_data[j];
 
                 SetConstTensorBuffer(tensor, mem_buf);
             }
@@ -350,9 +373,9 @@ bool OnnxSerializer::LoadConstTensor(StaticGraph* graph, const onnx::GraphProto&
                 SetTensorSize(tensor, tensor_size);
                 int64_t* raw_data = ( int64_t* )onnx_tensor.int64_data().data();
                 int64_t* mem_buf = ( int64_t* )std::malloc(tensor_size);
-                for (int i = 0; i < tensor_size / ( int )sizeof(int64_t); i++)
+                for (int j = 0; j < tensor_size / ( int )sizeof(int64_t); j++)
                 {
-                    mem_buf[i] = raw_data[i];
+                    mem_buf[j] = raw_data[j];
                 }
                 SetConstTensorBuffer(tensor, mem_buf);
             }
@@ -361,11 +384,10 @@ bool OnnxSerializer::LoadConstTensor(StaticGraph* graph, const onnx::GraphProto&
         SetConstTensorFileLocation(tensor, -1, 0);
 
         /* Now, create the node .... */
-
         StaticOp* op = CreateStaticOp(graph, "Const");
         StaticNode* node = CreateStaticNode(graph, onnx_tensor_name);
-        //const std::string& name_ = GetTensorName(tensor);
-        //printf("tensor name: %s \n", name_.c_str());
+        // const std::string& name_ = GetTensorName(tensor);
+        // printf("tensor name: %s \n", name_.c_str());
         SetNodeOp(node, op);
 
         AddNodeOutputTensor(node, tensor);
@@ -440,10 +462,11 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
 {
     std::vector<std::string> tensor_name_list;
     bool repeat_name_flag = false;
-    for(int i = 0; i < onnx_node.input_size(); i++)
+    for (int i = 0; i < onnx_node.input_size(); i++)
     {
         const std::string& input_name = onnx_node.input(i);
-        if(input_name == ""){
+        if (input_name == "")
+        {
             continue;
         }
 
@@ -451,34 +474,40 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
         StaticTensor* new_tensor = nullptr;
         // std::vector<std::string>::iterator iter = std::find(node_name.begin(), node_name.end(),tensor->name);
         std::string onnx_tensor_name = input_name;
-        std::vector<std::string>::iterator iter=std::find(tensor_name_list.begin(), tensor_name_list.end(), input_name);
-        if(iter==tensor_name_list.end()){
+        std::vector<std::string>::iterator iter = std::find(tensor_name_list.begin(), tensor_name_list.end(), input_name);
+        if (iter == tensor_name_list.end())
+        {
             tensor_name_list.push_back(onnx_tensor_name);
-        } else {
+        }
+        else
+        {
             repeat_name_flag = true;
-        }        
+        }
 
-        if(node_name[tensor->name] != 0 && repeat_name_flag){
+        if (node_name[tensor->name] != 0 && repeat_name_flag)
+        {
             repeat_name_flag = false;
-            if(tensor->dims.size() == 0){
+            if (tensor->dims.size() == 0)
+            {
                 AddNodeInputTensor(node, tensor);
                 continue;
             }
-            std::string new_tensor_name  = tensor->name + "_" + std::to_string(node_name[tensor->name]);
+            std::string new_tensor_name = tensor->name + "_" + std::to_string(node_name[tensor->name]);
             new_tensor = CreateStaticConstTensor(graph, new_tensor_name);
             std::vector<int> dims = tensor->dims;
             int dim_size = tensor->dims.size();
             int tensor_size = 1;
-            for(int t = 0; t < dim_size; t++){
+            for (int t = 0; t < dim_size; t++)
+            {
                 tensor_size *= dims[t];
             }
             SetTensorDim(new_tensor, dims);
             SetTensorDataType(new_tensor, DataType::GetTypeID("float32"));
-            tensor_size = 4*tensor_size;
+            tensor_size = 4 * tensor_size;
             SetTensorSize(tensor, tensor_size);
             uint8_t* mem_buf = ( uint8_t* )std::malloc(tensor_size);
             uint8_t* raw_data = ( uint8_t* )GetConstTensorBuffer(tensor);
-            for(int i = 0; i < tensor_size; i++)
+            for (int i = 0; i < tensor_size; i++)
             {
                 mem_buf[i] = raw_data[i];
             }
@@ -489,25 +518,27 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
             SetNodeOp(new_node, op);
             AddNodeOutputTensor(new_node, new_tensor);
             AddNodeInputTensor(node, new_tensor);
-            node_name[tensor->name] = node_name[tensor->name] + 1; 
-        } else {
+            node_name[tensor->name] = node_name[tensor->name] + 1;
+        }
+        else
+        {
             AddNodeInputTensor(node, tensor);
             node_name[tensor->name] = node_name[tensor->name] + 1;
         }
     }
 
-    for(int i = 0; i < onnx_node.output_size(); i++)
+    for (int i = 0; i < onnx_node.output_size(); i++)
     {
         const std::string& onnx_op_name = onnx_node.op_type();
 
-        if(onnx_skip_output_for_test(onnx_op_name, i))
+        if (onnx_skip_output_for_test(onnx_op_name, i))
             continue;
 
         const std::string& output_name = onnx_node.output(i);
-        
-        if(output_name == "")
+
+        if (output_name == "")
             continue;
-        
+
         StaticTensor* tensor = CreateStaticTensor(graph, output_name);
 
         SetTensorDataType(tensor, DataType::GetTypeID("float32"));
@@ -516,6 +547,7 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
 
     return true;
 }
+
 bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
 {
     const onnx::GraphProto& onnx_graph = model.graph();
@@ -545,6 +577,7 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
             //       continue;
         }
     }
+
     if (no_supported_op.size())
     {
         LOG_ERROR() << "These " << no_supported_op.size() << "op are not supported\n";
@@ -557,28 +590,39 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
 
         return false;
     }
-    for(int i = 0; i < onnx_graph.node_size(); i++){
+
+    for (int i = 0; i < onnx_graph.node_size(); i++)
+    {
         const onnx::NodeProto& onnx_node = onnx_graph.node(i);
         const std::string& onnx_op_name = onnx_node.op_type();
 
-        if(onnx_op_name == "null" || onnx_op_name == "_zeros"|| onnx_op_name == "Constant")
-            continue; 
+        if (onnx_op_name == "null" || onnx_op_name == "_zeros" || onnx_op_name == "Constant")
+            continue;
 
-        std::vector<std::string>::iterator iter=std::find(support_op.begin(), support_op.end(), onnx_op_name);
-        if(iter==support_op.end()){
-            std::vector<std::string>::iterator uniter=std::find(unsupport_op.begin(), unsupport_op.end(), onnx_op_name);
-            if(uniter==unsupport_op.end()){
+        std::vector<std::string>::iterator iter = std::find(support_op.begin(), support_op.end(), onnx_op_name);
+        if (iter == support_op.end())
+        {
+            std::vector<std::string>::iterator uniter =
+                std::find(unsupport_op.begin(), unsupport_op.end(), onnx_op_name);
+            if (uniter == unsupport_op.end())
+            {
                 unsupport_op.push_back(onnx_op_name);
-            } else {
+            }
+            else
+            {
                 continue;
             }
-        } else {
+        }
+        else
+        {
             continue;
         }
     }
-    if(unsupport_op.size() != 0){
+    if (unsupport_op.size() != 0)
+    {
         printf("These ops are not in onnx serializer: \n");
-        for(int i = 0; i < (int)unsupport_op.size(); i++){
+        for (int i = 0; i < ( int )unsupport_op.size(); i++)
+        {
             printf("[ %s ]\n", unsupport_op[i].c_str());
         }
         printf("\n");
@@ -592,7 +636,12 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
 
         if (onnx_op_name == "Constant")
             continue;
-        StaticNode* node = CreateStaticNode(graph, onnx_node.output(0));
+
+        StaticNode* node = nullptr;
+        if (onnx_node.name().empty())
+            node = CreateStaticNode(graph, onnx_node.output(0));
+        else
+            node = CreateStaticNode(graph, onnx_node.name());
 
         if (!LoadNode(graph, node, onnx_node))
             break;
@@ -2635,25 +2684,6 @@ static bool LoadOnnxTile(StaticGraph* graph, StaticNode* node, const onnx::NodeP
     TileParam param = any_cast<TileParam>(OpManager::GetOpDefParam("Tile"));
     param.frame_flag = 1;
 
-    /*
-        for(int k = 0; k < onnx_node.attribute_size(); k++)
-        {
-            const onnx::AttributeProto& attr = onnx_node.attribute(k);
-            if(attr.name() == "frame_flag")
-            {
-                param.frame_flag = 1;
-            }
-            else if(attr.name() == "reps")
-            {
-                for(int i = 0; i < attr.ints_size();i++)
-                {
-                    param.reps.push_back(attr.ints(i));
-                }
-            }
-        }
-    */
-
-    // sort(param.reps.begin(), param.reps.end());
     StaticOp* op = CreateStaticOp(graph, "Tile");
     SetOperatorParam(op, param);
     SetNodeOp(node, op);
@@ -2782,9 +2812,7 @@ static bool LoadOnnxResize(StaticGraph* graph, StaticNode* node, const onnx::Nod
     }
 
     SetOperatorParam(op, param);
-
     SetNodeOp(node, op);
-
 
     return true;
 }
