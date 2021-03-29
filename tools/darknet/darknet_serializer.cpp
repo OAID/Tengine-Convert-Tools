@@ -690,6 +690,28 @@ static bool LoadRegion(StaticGraph* graph, StaticNode* node, std::vector<std::st
 
     return true;
 }
+static bool LoadDropout(StaticGraph* graph, StaticNode* node, std::vector<std::string>& tensor_name_map, list* options,
+                      int index, FILE* fp)
+{
+    StaticTensor* tensor = FindTensor(graph, tensor_name_map[index - 1]);
+    if (tensor == NULL)
+        return false;
+    AddNodeInputTensor(node, tensor);
+    std::vector<int> input_dims = GetTensorDim(tensor);
+    std::vector<int> out_dims;
+    out_dims.push_back(input_dims[0]);
+    out_dims.push_back(input_dims[1]);
+    out_dims.push_back(input_dims[2]);
+    out_dims.push_back(input_dims[3]);
+
+    StaticTensor* out_tensor = GetNodeOutputTensor(graph, node, 0);
+    SetTensorDim(out_tensor, out_dims);
+
+    StaticOp* op = CreateStaticOp(graph, "Dropout");
+    SetNodeOp(node, op);
+
+    return true;
+}
 bool DarkNetSerializerRegisterOpLoader(void)
 {
     SerializerPtr serializer;
@@ -706,6 +728,7 @@ bool DarkNetSerializerRegisterOpLoader(void)
     darknet->RegisterOpLoadMethod("[maxpool]", op_load_t(LoadMaxPooling));
     darknet->RegisterOpLoadMethod("[reorg]", op_load_t(LoadReorg));
     darknet->RegisterOpLoadMethod("[region]", op_load_t(LoadRegion));
+    darknet->RegisterOpLoadMethod("[dropout]", op_load_t(LoadDropout));
 
     return true;
 }
