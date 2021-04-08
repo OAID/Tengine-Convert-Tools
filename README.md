@@ -28,14 +28,14 @@ make -j`nproc` && make install
 
 ## Exection File
 
-- The exection should be under `./build/install/bin/` named as `tm_convert_tool`.
+- The exection should be under `./build/install/bin/` named as `convert_tool`.
 
 ## Run Convert Tool
 
 ### How to use
 
 ```
-$ ./tm_convert_tool -h
+$ ./convert_tool -h
 [Convert Tools Info]: optional arguments:
         -h    help            show this help message and exit
         -f    input type      path to input float32 tmfile
@@ -48,42 +48,42 @@ To run the convert tool, running as following command, Note: The command example
 
 - Caffe
 ``` shell
-./install/bin/tm_convert_tool -f caffe -p mobilenet_deploy.prototxt -m mobilenet.caffemodel -o mobilenet.tmfile
+./install/bin/convert_tool -f caffe -p mobilenet_deploy.prototxt -m mobilenet.caffemodel -o mobilenet.tmfile
 ```
 
 - MxNet
 ``` shell
-./install/bin/tm_convert_tool -f mxnet -p mobilenet1_0-symbol.json -m mobilene1_0-0000.params -o mobileent.tmfile
+./install/bin/convert_tool -f mxnet -p mobilenet1_0-symbol.json -m mobilene1_0-0000.params -o mobileent.tmfile
 ```
 
 - ONNX
 ``` shell
-./install/bin/tm_convert_tool -f onnx -m mobilenet.onnx -o mobilenet.tmfile
+./install/bin/convert_tool -f onnx -m mobilenet.onnx -o mobilenet.tmfile
 ```
 
 - TensorFlow
 ``` shell
-./install/bin/tm_convert_tool -f tensorflow -m mobielenet_v1_1.0_224_frozen.pb -o mobilenet.tmfile
+./install/bin/convert_tool -f tensorflow -m mobielenet_v1_1.0_224_frozen.pb -o mobilenet.tmfile
 ```
 
 - TFLITE
 ``` shell
-./install/bin/tm_convert_tool -f tflite -m mobielenet.tflite -o mobilenet.tmfile
+./install/bin/convert_tool -f tflite -m mobielenet.tflite -o mobilenet.tmfile
 ```
 
 - DarkNet: darknet only support for yolov3 model
 ``` shell
-./install/bin/tm_convert_tool -f darknet -p yolov3.cfg -m yolov3.weights -o yolov3.tmfile
+./install/bin/convert_tool -f darknet -p yolov3.cfg -m yolov3.weights -o yolov3.tmfile
 ```
 
 - NCNN
 ``` shell
-./install/bin/tm_convert_tool -f ncnn -p mobilenet.param -m mobilenet.bin -o mobilenet.tmfile
+./install/bin/convert_tool -f ncnn -p mobilenet.param -m mobilenet.bin -o mobilenet.tmfile
 ```
 
 - MegEngine
 ``` shell
-./install/bin/tm_convert_tool -f megengine -m mobilenet.pkl -o mobilenet.tmfile
+./install/bin/convert_tool -f megengine -m mobilenet.pkl -o mobilenet.tmfile
 ```
 
 ## How to enable MegEngine support[optional]
@@ -156,7 +156,7 @@ A jupyter notebook was offered for users, check [MegEngine.ipynb](https://github
 - Convert MegEngine .pkl model to Tengine .tmfile
 
 ``` bash
-./install/bin/tm_convert_tool -f megengine -m new_model.pkl -o resnet18.tmfile
+./install/bin/convert_tool -f megengine -m new_model.pkl -o resnet18.tmfile
 ```
 
 

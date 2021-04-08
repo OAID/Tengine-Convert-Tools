@@ -192,33 +192,33 @@ if(BUILD_MEGENGINE_SERIALIZER)
 endif()
 
 
-add_executable(tm_convert_tool ${FRAMEWORK_SERIALIZER_SRCS})
-target_link_libraries(tm_convert_tool ${CMAKE_PROJECT_NAME} pthread dl m)
+add_executable(convert_tool ${FRAMEWORK_SERIALIZER_SRCS})
+target_link_libraries(convert_tool ${CMAKE_PROJECT_NAME} pthread dl m)
 
 # OneFlow Serializer
 if (BUILD_ONEFLOW_SERIALIZER)
     add_subdirectory(oneflow)
-    target_link_libraries(tm_convert_tool oneflow2tengine)
+    target_link_libraries(convert_tool oneflow2tengine)
 endif()
 
 if(BUILD_CAFFE_SERIALIZER OR BUILD_ONNX_SERIALIZER OR BUILD_TF_SERIALIZER)
     if (Protobuf_LIBRARIES)
-        target_link_libraries(tm_convert_tool ${Protobuf_LIBRARIES})
+        target_link_libraries(convert_tool ${Protobuf_LIBRARIES})
     else()
         set(PROTOBUF_LIB_NAME Protobuf_LIBRARY_${CMAKE_BUILD_TYPE})
-        target_link_libraries(tm_convert_tool ${PROTOBUF_LIB_NAME})
+        target_link_libraries(convert_tool ${PROTOBUF_LIB_NAME})
     endif()
 endif()
 
 if(BUILD_MEGENGINE_SERIALIZER)
-    target_link_libraries(tm_convert_tool ${MEGENGINE_LIB} ${DNNL_LIB} ${FLATBUFFERS_LIB})
+    target_link_libraries(convert_tool ${MEGENGINE_LIB} ${DNNL_LIB} ${FLATBUFFERS_LIB})
 endif()
 
 # enable code coverage test
 if(BUILD_COVERAGE)
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
     SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")    
-    target_link_libraries(tm_convert_tool ${CMAKE_PROJECT_NAME} -coverage -lgcov)
+    target_link_libraries(convert_tool ${CMAKE_PROJECT_NAME} -coverage -lgcov)
 endif()
 
-install (TARGETS tm_convert_tool DESTINATION bin)
+install (TARGETS convert_tool DESTINATION bin)
