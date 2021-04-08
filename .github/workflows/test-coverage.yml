@@ -24,13 +24,13 @@ jobs:
     - name: test-models-convert
       run: |
         cd build
-        ./tools/tm_convert_tool -f caffe -p ./tengine_test_data/mssd.prototxt -m ./tengine_test_data/mssd.caffemodel -o mssd_caffe.tmfile
-        ./tools/tm_convert_tool -f caffe -p ./tengine_test_data/mobilenet_v2.prototxt -m ./tengine_test_data/mobilenet_v2.caffemodel -o mobilenet_v2_caffe.tmfile
-        ./tools/tm_convert_tool -f caffe -p ./tengine_test_data/retinaface.prototxt -m ./tengine_test_data/retinaface.caffemodel -o retinaface_caffe.tmfile
-        ./tools/tm_convert_tool -f mxnet -p ./tengine_test_data/retinaface.json -m ./tengine_test_data/retinaface.params -o retinaface_mx.tmfile
-        ./tools/tm_convert_tool -f onnx  -m ./tengine_test_data/squeezenet.onnx -o squeezenet_onnx.tmfile
-        ./tools/tm_convert_tool -f tflite -m ./tengine_test_data/mobilenet_v2.tflite -o mobilenet_v2_tflite.tmfile
-        ./tools/tm_convert_tool -f darknet -p ./tengine_test_data/yolov4-tiny.cfg -m ./tengine_test_data/yolov4-tiny.weights -o yolov4-tiny.tmfile
+        ./tools/convert_tool -f caffe -p ./tengine_test_data/mssd.prototxt -m ./tengine_test_data/mssd.caffemodel -o mssd_caffe.tmfile
+        ./tools/convert_tool -f caffe -p ./tengine_test_data/mobilenet_v2.prototxt -m ./tengine_test_data/mobilenet_v2.caffemodel -o mobilenet_v2_caffe.tmfile
+        ./tools/convert_tool -f caffe -p ./tengine_test_data/retinaface.prototxt -m ./tengine_test_data/retinaface.caffemodel -o retinaface_caffe.tmfile
+        ./tools/convert_tool -f mxnet -p ./tengine_test_data/retinaface.json -m ./tengine_test_data/retinaface.params -o retinaface_mx.tmfile
+        ./tools/convert_tool -f onnx  -m ./tengine_test_data/squeezenet.onnx -o squeezenet_onnx.tmfile
+        ./tools/convert_tool -f tflite -m ./tengine_test_data/mobilenet_v2.tflite -o mobilenet_v2_tflite.tmfile
+        ./tools/convert_tool -f darknet -p ./tengine_test_data/yolov4-tiny.cfg -m ./tengine_test_data/yolov4-tiny.weights -o yolov4-tiny.tmfile
     - name: lcov-collect
       run: |
         cd build

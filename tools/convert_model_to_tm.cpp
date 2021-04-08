@@ -38,7 +38,7 @@ const char* help_params = "[Convert Tools Info]: optional arguments:\n"
                       "\t-o    output model    path to output fp32 tmfile\n";
 
 const char* example_params = "[Convert Tools Info]: example arguments:\n"
-                             "\t./tm_convert_tool -f caffe -p ./mobilenet.prototxt -m ./mobilenet.caffemodel -o ./mobilenet.tmfile\n";
+                             "\t./convert_tool -f caffe -p ./mobilenet.prototxt -m ./mobilenet.caffemodel -o ./mobilenet.tmfile\n";
 
 void show_usage()
 {
