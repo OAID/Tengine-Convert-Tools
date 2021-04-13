@@ -1294,6 +1294,10 @@ static bool LoadOnnxSlice(StaticGraph* graph, StaticNode* node, const onnx::Node
 {
     SliceParam param = any_cast<SliceParam>(OpManager::GetOpDefParam("Slice"));
 
+    param.step = 1;
+    param.axis = 0;
+    param.begin = 0;
+    param.end = -1;
     if (onnx_node.input_size() == 1)
     {
         for (int k = 0; k < onnx_node.attribute_size(); k++)
