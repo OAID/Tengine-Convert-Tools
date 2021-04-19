@@ -1,3 +1,4 @@
 #pragma once
 
 #cmakedefine BUILD_MEGENGINE_SERIALIZER
+#cmakedefine BUILD_ONEFLOW_SERIALIZER
