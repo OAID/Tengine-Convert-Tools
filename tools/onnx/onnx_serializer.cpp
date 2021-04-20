@@ -154,6 +154,7 @@ void OnnxSerializer::LoadConstNode(const onnx::GraphProto& onnx_graph, StaticGra
 
     int node_count = onnx_graph.node_size();
     std::vector<int> flag;
+    #if 0
     for(int i = 0; i < node_count; i++){
         const onnx::NodeProto& node = onnx_graph.node(i);
         const std::string& op = node.op_type();
@@ -174,7 +175,7 @@ void OnnxSerializer::LoadConstNode(const onnx::GraphProto& onnx_graph, StaticGra
             flag.push_back(0);
         }
     }
-    
+    #endif
     for (int i = 0; i < node_count; i++)
     {
         const onnx::NodeProto& node = onnx_graph.node(i);
@@ -277,6 +278,7 @@ void OnnxSerializer::LoadConstNode(const onnx::GraphProto& onnx_graph, StaticGra
             SetNodeOp(node_create, op);
             AddNodeOutputTensor(node_create, tensor);
         }
+        #if 0
         if (op == "Conv" && !flag[i])
         {
             if(node.input_size() <= 2){
@@ -315,6 +317,7 @@ void OnnxSerializer::LoadConstNode(const onnx::GraphProto& onnx_graph, StaticGra
             SetNodeOp(node_create, op);
             AddNodeOutputTensor(node_create, tensor);
         }
+        #endif
     }
 
 }
