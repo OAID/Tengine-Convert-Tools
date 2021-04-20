@@ -72,6 +72,7 @@ protected:
     bool LoadConstTensor(StaticGraph* graph, const onnx::GraphProto& onnx_graph);
     void CreateInputNode(StaticGraph* graph, const onnx::GraphProto& onnx_graph);
     bool LoadNode(StaticGraph* graph, StaticNode*, const onnx::NodeProto&);
+    std::vector<std::string> initializer_check;
 };
 
 }    // namespace TEngine
