@@ -42,13 +42,14 @@ endif()
 # paser options
 option(BUILD_CAFFE_SERIALIZER       "Caffe serializer"          ON)
 option(BUILD_ONNX_SERIALIZER        "ONNX serializer"           ON)
-option(BUILD_ONEFLOW_SERIALIZER     "OneFlow serializer"        ON)
+option(BUILD_ONEFLOW_SERIALIZER     "OneFlow serializer"        OFF)
 option(BUILD_MXNET_SERIALIZER       "MXNet serializer"          ON)
 option(BUILD_DARKNET_SERIALIZER     "Darknet serializer"        ON)
 option(BUILD_TF_SERIALIZER          "TensorFlow serializer"     ON)
 option(BUILD_TFLITE_SERIALIZER      "TFLite serializer"         ON)
 option(BUILD_NCNN_SERIALIZER        "NCNN serializer"           ON)
 option(BUILD_MEGENGINE_SERIALIZER   "MegEngine serializer"      OFF)
+option(BUILD_PADDLE_SERIALIZER      "Paddle serializer"         ON)
 option(BUILD_TENGINE_SERIALIZER     "Tengine serializer"        ON)
 
 # some basic options

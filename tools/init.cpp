@@ -41,6 +41,7 @@
 #include "src_tm_serializer.hpp"
 #include "ncnn_serializer.hpp"
 #include "darknet_serializer.hpp"
+#include "paddle_serializer.hpp"
 
 #ifdef BUILD_MEGENGINE_SERIALIZER
 #include "megengine_serializer.hpp"
@@ -60,6 +61,7 @@ extern bool TFSerializerRegisterOpLoader();
 extern bool NcnnSerializerRegisterOpLoader();
 extern bool DarkNetSerializerRegisterOpLoader();
 extern bool TFLiteSerializerRegisterOpLoader();
+extern bool PaddleSerializerRegisterOpLoader();
 
 #ifdef BUILD_MEGENGINE_SERIALIZER
 extern bool MegengineSerializerRegisterOpLoader();
@@ -143,6 +145,14 @@ int serializer_plugin_init(void)
     SerializerManager::SafeAdd("ncnn", SerializerPtr(ncnn_serializer));
 
     NcnnSerializerRegisterOpLoader();
+
+    // PADDLE
+    factory->RegisterInterface<PaddleSerializer>("paddle");
+    auto paddle_serializer = factory->Create("paddle");
+
+    SerializerManager::SafeAdd("paddle", SerializerPtr(paddle_serializer));
+
+    PaddleSerializerRegisterOpLoader();
 
 #ifdef BUILD_MEGENGINE_SERIALIZER
     // MegEngine
