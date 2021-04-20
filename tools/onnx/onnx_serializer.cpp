@@ -703,6 +703,8 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
         else
             node = CreateStaticNode(graph, onnx_node.name());
 
+//        fprintf(stderr, "%s\n", onnx_node.name().c_str()); // for debug
+
         if (!LoadNode(graph, node, onnx_node))
             break;
 
@@ -2838,7 +2840,16 @@ static bool LoadOnnxResize(StaticGraph* graph, StaticNode* node, const onnx::Nod
             }
         }
     }
-    else
+    else if(onnx_node.input_size() == 2) // opset 10
+    {
+        const std::string& input_name = onnx_node.input(1);
+        StaticTensor* tensor = FindTensor(graph, input_name);
+        float* data = ( float* )GetConstTensorBuffer(tensor);
+
+        param.height_scale = data[2];
+        param.width_scale = data[3];
+    }
+    else if(onnx_node.input_size() == 3) // opset 11
     {
         const std::string& input_name = onnx_node.input(2);
         StaticTensor* tensor = FindTensor(graph, input_name);
@@ -2846,7 +2857,12 @@ static bool LoadOnnxResize(StaticGraph* graph, StaticNode* node, const onnx::Nod
 
         param.height_scale = data[2];
         param.width_scale = data[3];
+    }
+    else
+    {
+        fprintf(stderr, "Not support the num of inputs > 3, please check the onnx model or update the codes of convert tool\n");
 
+        return false;
     }
 
     std::string mode = "nearest";
