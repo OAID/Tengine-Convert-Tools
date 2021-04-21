@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        if (file_format == "caffe" || file_format == "mxnet" || file_format == "darknet" || file_format == "ncnn" || file_format == "oneflow")
+        if (file_format == "caffe" || file_format == "mxnet" || file_format == "darknet" || file_format == "ncnn" || file_format == "oneflow" || file_format == "paddle")
         {
             proto_file_needed = true;
             model_file_needed = true;
@@ -136,6 +136,7 @@ int main(int argc, char* argv[])
             std::cout << "Proto file does not exist: " << proto_file << "\n";
             return -1;
         }
+        std::cout << "Proto file does not exist: " << proto_file << "\n";
     }
 
     if (model_file_needed)
@@ -150,6 +151,7 @@ int main(int argc, char* argv[])
             std::cout << "Model file does not exist: " << model_file << "\n";
             return -1;
         }
+        std::cout << "Model file does not exist: " << model_file << "\n";
     }
 
     if (output_tmfile.empty())
