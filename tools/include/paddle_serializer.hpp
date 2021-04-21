@@ -36,6 +36,7 @@
 #include "static_graph_interface.hpp"
 #include "logger.hpp"
 
+#include "framework.pb.h"
 
 namespace TEngine {
 
@@ -54,10 +55,10 @@ public:
         format_name_ = "paddle";
     }
     virtual ~PaddleSerializer(){}
-    
+
     unsigned int GetFileNum(void) override
     {
-        return 1;
+        return 2;
     }
 
     bool LoadModel(const std::vector<std::string>& file_list, StaticGraph* graph) override;
@@ -70,8 +71,18 @@ public:
     {
         return false;
     }
-// protected:
-    // bool LoadGraph(te_caffe::NetParameter& test_net, te_caffe::NetParameter& train_net, StaticGraph* graph);
+protected:
+    bool LoadBinaryFile(const char* fname);
+    bool LoadTextFile(const char* fname, paddle::framework::proto::ProgramDesc& model_net);
+
+    bool LoadGraph(paddle::framework::proto::ProgramDesc& model, StaticGraph* graph);
+    bool LoadConstTensor(StaticGraph* graph, const paddle::framework::proto::BlockDesc& paddle_graph);
+    void CreateInputNode(StaticGraph* graph, const paddle::framework::proto::BlockDesc& paddle_graph);
+    bool LoadNode(StaticGraph* graph, StaticNode*, const paddle::framework::proto::OpDesc&);
+    void LoadConstNode(const paddle::framework::proto::BlockDesc& paddle_graph, StaticGraph* graph);
+
+    std::vector<std::string> paddle_node_outputs;
+    
 };
 
 }
