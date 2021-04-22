@@ -703,7 +703,7 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
         else
             node = CreateStaticNode(graph, onnx_node.name());
 
-        fprintf(stderr, "%s, output %s\n", onnx_node.name().c_str(), onnx_node.output(0).c_str()); // for debug
+        // fprintf(stderr, "%s, output %s\n", onnx_node.name().c_str(), onnx_node.output(0).c_str()); // for debug
 
         if (!LoadNode(graph, node, onnx_node))
             break;
