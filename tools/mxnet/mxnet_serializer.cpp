@@ -651,7 +651,7 @@ bool MxnetSerializer::LoadGraph(StaticGraph* graph, const std::vector<MxnetNode>
         if (!FindOpLoadMethod(mxnet_node.op))
         {
             auto it = find(no_supported_op.begin(), no_supported_op.end(), mxnet_node.op);
-            if (it != no_supported_op.end())
+            if (it == no_supported_op.end())
                 no_supported_op.push_back(mxnet_node.op);
         }
     }

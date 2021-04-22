@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2017, Open AI Lab
  * Author: haitao@openailab.com
+ *         bzhang@openailab.com
  */
 #include <cmath>
 #include <cstring>
@@ -214,12 +215,10 @@ static bool Fc_Weight_Bn(Subgraph* graph, Node* FcNode, float* mean, float* var,
 
     int channel_num = kernel_shape.Shape(0);
     int totalSize = kernel_shape.Shape(1);
-    // printf("channel_num: %d %d\n", channel_num, totalSize);
-    int kernel_size = output_chan;
+    int kernel_size = totalSize;
     float* kernel_new = ( float* )(malloc(channel_num * kernel_size * sizeof(float) + 128));
-
-    memcpy(kernel_new, kernel_org, sizeof(float) * channel_num * kernel_size);
-
+    memcpy(kernel_new, kernel_org, sizeof(float) * channel_num * kernel_size + 128);
+    
     kernel_tensor->SetMemAddr(kernel_new);
     kernel_tensor->SetAttr("free_mem", 1);
 
@@ -268,7 +267,6 @@ static bool Fc_Weight_Bn(Subgraph* graph, Node* FcNode, float* mean, float* var,
         new_bias_tensor = FcNode->GetInputTensor(2);
         new_bias_tensor->SetAttr("free_mem", 1);
     }
-    // printf("rescale_factor_tmp: %f var: %f mean: %f, bias: %f \n", rescale_factor_tmp, var[0], mean[0], bias[0]);
     rescale_factor_tmp = rescale_factor_tmp ? 1 / rescale_factor_tmp : 0;
 
     if (NULL == bias)
@@ -277,12 +275,14 @@ static bool Fc_Weight_Bn(Subgraph* graph, Node* FcNode, float* mean, float* var,
         {
             scale_var_inv[c] = 1.f / sqrt(var[c] * rescale_factor_tmp + eps);
             scale_mean[c] = -mean[c] * rescale_factor_tmp * scale_var_inv[c];
+            
         }
     }
     else
     {
         for (int c = 0; c < channel_num; c++)
         {
+            
             scale_var_inv[c] = 1.f / sqrt(var[c] * rescale_factor_tmp + eps);
             scale_mean[c] = (bias[c] - mean[c] * rescale_factor_tmp) * scale_var_inv[c];
         }
@@ -303,18 +303,15 @@ static bool Fc_Weight_Bn(Subgraph* graph, Node* FcNode, float* mean, float* var,
             scale_mean[c] = scale_mean[c] + beta[c];
         }
     }
-    // printf("%d %d \n", output_chan, kernel_size);
     if (kernel_shape.GetDataLayout() == TENGINE_LAYOUT_NCHW)
     {
         for (int o_c = 0; o_c < output_chan; o_c++)
         {
             float w_scale = scale_var_inv[o_c];
-            // float* kernel = kernel_new + o_c * kernel_size;
             for (int i = 0; i < kernel_size; i++)
             {
-                // kernel_new[o_c * kernel_size + i] = kernel_new[o_c * kernel_size + i] * w_scale;
-                kernel_new[o_c * kernel_size + i] = kernel_new[o_c * kernel_size + i] * w_scale;
-                // printf("%d %d %f %f\n", o_c, i, kernel[o_c * kernel_size + i], w_scale);
+                kernel_new[o_c * kernel_size + i] = kernel_new[o_c * kernel_size + i] * w_scale ;
+        
             }
         }
     }
@@ -324,11 +321,11 @@ static bool Fc_Weight_Bn(Subgraph* graph, Node* FcNode, float* mean, float* var,
     for (int i = 0; i < channel_num; i++)
     {
         bias_tmp[i] = scale_mean[i];
+        // printf("%f \n",bias_tmp[i] );
     }
 
     free(scale_var_inv);
     free(scale_mean);
-
     return true;
 }
 
@@ -455,12 +452,6 @@ static bool GraphFuseBNScale(Graph* graph, GraphOptimizer* opt)
         Tensor* orig_mean = orig_bn->GetInputTensor(3);
         Tensor* orig_var = orig_bn->GetInputTensor(4);
 
-        // float* gamma = ( float* )get_tensor_mem(orig_gamma);
-        // float* beta = ( float* )get_tensor_mem(orig_beta);
-        // float* mean = ( float* )get_tensor_mem(orig_mean);
-        // float* vat = ( float* )get_tensor_mem(orig_var);
-
-        // printf("BatchScale: gamma: %f beta: %f mean: %f var: %f \n", gamma[0], beta[0], mean[0], vat[0] );
         /*create the const node and add to the sub graph*/
         AddConstNodeToSubGraph(&fused, orig_gamma, fused_node, 1);
         AddConstNodeToSubGraph(&fused, orig_beta, fused_node, 2);
@@ -551,7 +542,6 @@ static bool GraphFuseRelu6(Graph* graph, GraphOptimizer* opt)
         Node* orig_output = orig->output_nodes[0];
         Node* orig_input = orig->input_nodes[0];
 
-        //std::string node_name = orig_input->GetName() + orig_output->GetName();
         std::string node_name = orig_input->GetName();
 
         /*create new Node node*/
@@ -727,9 +717,9 @@ static bool GraphFuseConvBN(Graph* graph, GraphOptimizer* opt)
 
 static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt)
 {
+    
     int node_number = graph->seq_nodes.size();
     std::vector<Subgraph*> orig_sub;
-    // printf("FcBN \n");
     /*get all bn_scale chain*/
     for (int i = 0; i < node_number; i++)
     {
@@ -783,7 +773,6 @@ static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt)
         Node* orig_output = orig->output_nodes[0];
         Node* orig_input = orig->input_nodes[0];
 
-        //std::string node_name = orig_input->GetName() + "-" + orig_output->GetName();
         std::string node_name = orig_input->GetName();
 
         /*create new Node node*/
@@ -831,14 +820,10 @@ static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt)
         float* var = ( float* )get_tensor_mem(orig_var);
         float* gamma = NULL;
         float* beta = NULL;
-
-        // if(!param_org->caffe_flavor)
-        // {
         Tensor* orig_gamma = orig_output->GetInputTensor(1);
         Tensor* orig_beta = orig_output->GetInputTensor(2);
         gamma = ( float* )get_tensor_mem(orig_gamma);
         beta = ( float* )get_tensor_mem(orig_beta);
-        // }
 
         Tensor* bias_tensor;
 
@@ -847,13 +832,11 @@ static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt)
         else
             bias_tensor = nullptr;
 
-        // printf("mean: %f var: %f gama: %f beta: %f \n", mean[0], var[0], gamma[0], beta[0]);
         Fc_Weight_Bn(&fused, fused_node, mean, var, gamma, beta, param_org->eps, param_org->rescale_factor,
                      bias_tensor);
-
         graph->Replace(orig, &fused);
     }
-
+       
     /* release orig_sub */
     for (unsigned int i = 0; i < orig_sub.size(); i++)
     {
