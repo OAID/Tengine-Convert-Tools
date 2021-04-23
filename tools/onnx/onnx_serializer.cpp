@@ -703,7 +703,7 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
         else
             node = CreateStaticNode(graph, onnx_node.name());
 
-//        fprintf(stderr, "%s\n", onnx_node.name().c_str()); // for debug
+        // fprintf(stderr, "%s, output %s\n", onnx_node.name().c_str(), onnx_node.output(0).c_str()); // for debug
 
         if (!LoadNode(graph, node, onnx_node))
             break;
@@ -871,8 +871,16 @@ static bool LoadOnnxPooling(StaticGraph* graph, StaticNode* node, const onnx::No
             }
             else if (attr.name() == "strides")
             {
-                param.stride_h = attr.ints(0);
-                param.stride_w = attr.ints(1);
+                if (attr.ints_size() == 0)
+                {
+                    param.stride_h = 1;
+                    param.stride_w = 1;
+                }
+                else
+                {
+                    param.stride_h = attr.ints(0);
+                    param.stride_w = attr.ints(1);
+                }
             }
             else if (attr.name() == "pads")
             {
