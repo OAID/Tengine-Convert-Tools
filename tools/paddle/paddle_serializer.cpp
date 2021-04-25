@@ -49,6 +49,7 @@
 #include "operator/scale_param.hpp"
 #include "operator/gemm_param.hpp"
 #include "operator/fc_param.hpp"
+#include "operator/softmax.hpp"
 
 namespace TEngine {
 
@@ -345,22 +346,6 @@ bool PaddleSerializer::CreateInputNode(std::map<std::string, std::vector<int>>& 
     // get input tensor dims
     std::vector<int> dims;
     dims = all_tensor_dims[tensor_name];
-    // paddle::framework::proto::BlockDesc block = pp_net.blocks(0);
-    // for (unsigned int i = 0; i < block.vars_size(); i++)
-    // {
-    //     paddle::framework::proto::VarDesc var = block.vars(i);
-    //     if (var.name() == tensor_name)
-    //     {
-    //         paddle::framework::proto::VarType var_type = var.type();
-    //         paddle::framework::proto::VarType::LoDTensorDesc lod_tensor = var_type.lod_tensor();
-    //         paddle::framework::proto::VarType::TensorDesc tensor = lod_tensor.tensor();
-    //         for (int j = 0; j < tensor.dims_size(); j++)
-    //         {
-    //             dims.push_back(tensor.dims(j) == -1 ? 1 : tensor.dims(j));
-    //         }
-    //         break;
-    //     }
-    // }
 
     // create input node
     StaticTensor* tensor = CreateStaticTensor(graph, tensor_name);
@@ -789,6 +774,32 @@ static bool LoadPaddleReLu6(StaticGraph* graph, StaticNode* node, const PaddleNo
     return true;
 }
 
+static bool LoadPaddleSoftmax(StaticGraph* graph, StaticNode* node, const PaddleNode& pp_node)
+{
+    SoftmaxParam param = any_cast<SoftmaxParam>(OpManager::GetOpDefParam("Softmax"));
+    paddle::framework::proto::OpDesc op_desc = pp_node.op_desc;
+    for (int i = 0; i < op_desc.attrs_size(); i++)
+    {
+        paddle::framework::proto::OpDesc::Attr attr = op_desc.attrs(i);
+        std::string name = attr.name();
+        if (name == "axis")
+        {
+            param.axis = attr.i();
+        }
+    }
+    if (param.axis == -1)
+    {
+        StaticTensor* input = GetNodeInputTensor(graph, node, 0);
+        int dim_num = input->dims.size();
+        param.axis = dim_num - 1;
+    }
+
+    StaticOp* op = CreateStaticOp(graph, "Softmax");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+}
+
 bool PaddleSerializerRegisterOpLoader(void)
 {
     SerializerPtr serializer;
@@ -808,6 +819,7 @@ bool PaddleSerializerRegisterOpLoader(void)
     p_paddle->RegisterOpLoadMethod("matmul", op_load_t(LoadPaddleFullyconnected));
     p_paddle->RegisterOpLoadMethod("scale", op_load_t(LoadPaddleScale));
     p_paddle->RegisterOpLoadMethod("relu6", op_load_t(LoadPaddleReLu6));
+    p_paddle->RegisterOpLoadMethod("softmax", op_load_t(LoadPaddleSoftmax));
 
     return true;
 }
