@@ -31,6 +31,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <string>
 
 #include "serializer.hpp"
 #include "static_graph_interface.hpp"
@@ -42,7 +43,19 @@ namespace TEngine {
 
 struct PaddleNode
 {
+    std::string op;
+    std::string name;
+    std::vector<std::pair<std::string, std::string>> inputs;
+    paddle::framework::proto::OpDesc op_desc;
+};
 
+struct PaddleParam
+{
+    int dim_size;
+    int data_len;
+    std::string name;
+    std::vector<int> dims;
+    void* raw_data;
 };
 
 class PaddleSerializer : public Serializer
@@ -72,17 +85,14 @@ public:
         return false;
     }
 protected:
-    bool LoadBinaryFile(const char* fname);
-    bool LoadTextFile(const char* fname, paddle::framework::proto::ProgramDesc& model_net);
+    bool LoadBinaryFile(const char* fname, std::vector<PaddleParam>& paramlist, paddle::framework::proto::ProgramDesc pp_net);
+    bool LoadTextFile(const char* fname, paddle::framework::proto::ProgramDesc& pp_net);
 
-    bool LoadGraph(paddle::framework::proto::ProgramDesc& model, StaticGraph* graph);
-    bool LoadConstTensor(StaticGraph* graph, const paddle::framework::proto::BlockDesc& paddle_graph);
-    void CreateInputNode(StaticGraph* graph, const paddle::framework::proto::BlockDesc& paddle_graph);
-    bool LoadNode(StaticGraph* graph, StaticNode*, const paddle::framework::proto::OpDesc&);
-    void LoadConstNode(const paddle::framework::proto::BlockDesc& paddle_graph, StaticGraph* graph);
-
-    std::vector<std::string> paddle_node_outputs;
-    
+    bool LoadGraph(paddle::framework::proto::ProgramDesc& pp_net, const std::vector<PaddleParam>& paramlist, StaticGraph* graph);
+    bool LoadConstTensor(const std::vector<PaddleParam>& paramlist, StaticGraph* graph);
+    bool CreateInputNode(std::map<std::string, std::vector<int>>& all_tensor_dims, std::vector<PaddleNode>& nodelist, StaticGraph* graph);
+    bool LoadNode(StaticGraph* graph, StaticNode* node, PaddleNode& pp_node, std::map<std::string, std::vector<int>>& all_tensor_dims);
+    bool ConstructGraph(paddle::framework::proto::ProgramDesc& pp_net, std::vector<PaddleNode>& pp_nodelist);    
 };
 
 }
