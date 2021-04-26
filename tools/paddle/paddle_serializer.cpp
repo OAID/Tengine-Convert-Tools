@@ -212,22 +212,22 @@ bool PaddleSerializer::LoadModel(const std::vector<std::string>& file_list, Stat
         return false;
 
     paddle::framework::proto::ProgramDesc pp_net;
-    if (!LoadTextFile(file_list[1].c_str(), pp_net))
+    if (!LoadTextFile(file_list[0].c_str(), pp_net))
     {
-        LOG_ERROR() << "Parse text file " << file_list[1].c_str() << " failed\n";
+        LOG_ERROR() << "Parse text file " << file_list[0].c_str() << " failed\n";
         return false;
     }
 
     std::vector<PaddleParam> paramlist;
-    if (!LoadBinaryFile(file_list[0].c_str(), paramlist, pp_net))
+    if (!LoadBinaryFile(file_list[1].c_str(), paramlist, pp_net))
     {
-        LOG_ERROR() << "Parse binary file " << file_list[0].c_str() << " failed\n";
+        LOG_ERROR() << "Parse binary file " << file_list[1].c_str() << " failed\n";
         return false;
     }
 
-    SetGraphSource(graph, file_list[0]);
+    SetGraphSource(graph, file_list[1]);
     SetGraphSourceFormat(graph, "paddle");
-    SetGraphConstTensorFile(graph, file_list[0]);
+    SetGraphConstTensorFile(graph, file_list[1]);
     SetGraphLayout(graph, TENGINE_LAYOUT_NCHW);
     SetModelLayout(graph, TENGINE_LAYOUT_NCHW);
     SetModelFormat(graph, MODEL_FORMAT_PADDLE);
