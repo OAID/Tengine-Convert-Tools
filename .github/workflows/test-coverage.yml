@@ -33,7 +33,8 @@ jobs:
         ./tools/convert_tool -f onnx  -m ./tengine_test_data/shufflenetv2.onnx -o shufflenetv2_onnx.tmfile
         ./tools/convert_tool -f tflite -m ./tengine_test_data/mobilenet_v2.tflite -o mobilenet_v2_tflite.tmfile
         ./tools/convert_tool -f darknet -p ./tengine_test_data/yolov4-tiny.cfg -m ./tengine_test_data/yolov4-tiny.weights -o yolov4-tiny.tmfile
-        ./tools/convert_tool -f darknet -p ./tengine_test_data/yolo-fastest-1.1.cfg -m ./tengine_test_data/yolo-fastest-1.1.weights -o yolo-fastest-1.1.tmfile  
+        ./tools/convert_tool -f darknet -p ./tengine_test_data/yolo-fastest-1.1.cfg -m ./tengine_test_data/yolo-fastest-1.1.weights -o yolo-fastest-1.1.tmfile
+        ./tools/convert_tool -f paddle -p ./tengine_test_data/inference.pdmodel -m ./tengine_test_data/inference.pdiparams -o mobilenetv2_paddle.tmfile
     - name: lcov-collect
       run: |
         cd build

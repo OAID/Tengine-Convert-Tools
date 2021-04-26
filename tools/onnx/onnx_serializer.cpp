@@ -198,6 +198,7 @@ void OnnxSerializer::LoadConstNode(const onnx::GraphProto& onnx_graph, StaticGra
 
         if ((op == "Reshape" || op == "Gather")  )
         {
+
             const onnx::TensorProto& shape_tensor = node_tensor[node.input(1)];
             StaticTensor* tensor = CreateStaticConstTensor(graph, node.input(1));
             std::vector<int> dims;
@@ -690,6 +691,7 @@ bool OnnxSerializer::LoadGraph(onnx::ModelProto& model, StaticGraph* graph)
         printf("You may need use onnx simplifier first\n");
         return false;
     }
+    
     for (i = 0; i < onnx_graph.node_size(); i++)
     {
         const onnx::NodeProto& onnx_node = onnx_graph.node(i);

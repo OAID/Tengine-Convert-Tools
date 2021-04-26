@@ -33,8 +33,8 @@
 const char* help_params = "[Convert Tools Info]: optional arguments:\n"
                       "\t-h    help            show this help message and exit\n"
                       "\t-f    input type      path to input float32 tmfile\n"
-                      "\t-p    input structure path to the network structure of input model(*.prototxt, *.symbol, *.cfg)\n"
-                      "\t-m    input params    path to the network params of input model(*.caffemodel, *.params, *.weight, *.pb, *.onnx, *.tflite)\n"
+                      "\t-p    input structure path to the network structure of input model(*.prototxt, *.symbol, *.cfg, *.pdmodel)\n"
+                      "\t-m    input params    path to the network params of input model(*.caffemodel, *.params, *.weight, *.pb, *.onnx, *.tflite, *.pdiparams)\n"
                       "\t-o    output model    path to output fp32 tmfile\n";
 
 const char* example_params = "[Convert Tools Info]: example arguments:\n"
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        if (file_format == "caffe" || file_format == "mxnet" || file_format == "darknet" || file_format == "ncnn" || file_format == "oneflow")
+        if (file_format == "caffe" || file_format == "mxnet" || file_format == "darknet" || file_format == "ncnn" || file_format == "oneflow" || file_format == "paddle")
         {
             proto_file_needed = true;
             model_file_needed = true;
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 #ifdef BUILD_MEGENGINE_SERIALIZER
             std::cout << "Allowed input file format: caffe, caffe_single, onnx, oneflow, mxnet, tensorflow, darknet, ncnn, megengine\n";
 #else
-            std::cout << "Allowed input file format: caffe, caffe_single, onnx, oneflow, mxnet, tensorflow, darknet, ncnn\n";
+            std::cout << "Allowed input file format: caffe, caffe_single, onnx, oneflow, mxnet, tensorflow, darknet, ncnn, paddle\n";
 #endif
             return -1;
         }

@@ -86,6 +86,11 @@ To run the convert tool, running as following command, Note: The command example
 ./install/bin/convert_tool -f megengine -m mobilenet.pkl -o mobilenet.tmfile
 ```
 
+- PaddlePaddle
+``` shell
+./install/bin/convert_tool -f paddle -p inference.pdmodel -m inference.pdiparams -o mobilenetv2_paddle.tmfile
+```
+
 ## How to enable MegEngine support[optional]
 - First of all, build MegEngine with **DEBUG** mode:
 

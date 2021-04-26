@@ -49,6 +49,7 @@ option(BUILD_TF_SERIALIZER          "TensorFlow serializer"     ON)
 option(BUILD_TFLITE_SERIALIZER      "TFLite serializer"         ON)
 option(BUILD_NCNN_SERIALIZER        "NCNN serializer"           ON)
 option(BUILD_MEGENGINE_SERIALIZER   "MegEngine serializer"      OFF)
+option(BUILD_PADDLE_SERIALIZER      "Paddle serializer"         ON)
 option(BUILD_TENGINE_SERIALIZER     "Tengine serializer"        ON)
 
 # some basic options
