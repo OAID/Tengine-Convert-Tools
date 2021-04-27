@@ -482,7 +482,7 @@ tm_uoffset_t SaveTmResizeOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operat
 
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
-    SetTmOperator(&tm_op, TM2_OPTYPE_BILINEARRESIZE,
+    SetTmOperator(&tm_op, TM2_OPTYPE_RESIZE,
                   WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ResizeParam)));
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
