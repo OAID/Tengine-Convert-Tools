@@ -49,7 +49,11 @@
 #include "operator/scale_param.hpp"
 #include "operator/gemm_param.hpp"
 #include "operator/fc_param.hpp"
-#include "operator/softmax.hpp"
+#include "operator/softmax_param.hpp"
+#include "operator/relu_param.hpp"
+#include "operator/concat_param.hpp"
+#include "operator/interp_param.hpp"
+#include "operator/resize_param.hpp"
 
 namespace TEngine {
 
@@ -238,6 +242,7 @@ bool PaddleSerializer::LoadModel(const std::vector<std::string>& file_list, Stat
 bool PaddleSerializer::ConstructGraph(paddle::framework::proto::ProgramDesc& pp_net, std::vector<PaddleNode>& pp_nodelist)
 {
     int block_size = pp_net.blocks_size();
+    std::vector<std::string> fake_nodes;
     for (int i = 0; i < block_size; i++)
     {
         paddle::framework::proto::BlockDesc block = pp_net.blocks(i);
@@ -248,6 +253,8 @@ bool PaddleSerializer::ConstructGraph(paddle::framework::proto::ProgramDesc& pp_
 
             node.op_desc = op;
             node.op = op.type();
+            
+            bool fake_node = false;
             for (int k = 0; k < op.inputs_size(); k++)
             {
                 paddle::framework::proto::OpDesc::Var var = op.inputs(k);
@@ -255,9 +262,41 @@ bool PaddleSerializer::ConstructGraph(paddle::framework::proto::ProgramDesc& pp_
                     continue;
                 std::pair<std::string, std::string> input;
                 input.first = var.parameter();
-                input.second = var.arguments(0);
-                node.inputs.push_back(input);
+                for (int idx = 0; idx < var.arguments_size(); idx++)
+                {
+                    input.second = var.arguments(idx);
+                    node.inputs.push_back(input);
+                }
+
+                auto in_fake_nodes = find(fake_nodes.begin(), fake_nodes.end(), input.second);
+                if (in_fake_nodes != fake_nodes.end())
+                {
+                    fake_node = true;
+                    for (int k = 0; k < op.outputs_size(); k++)
+                    {
+                        paddle::framework::proto::OpDesc::Var var = op.outputs(k);
+                        std::string name = var.parameter();
+                        if (name == "Y" || name == "Output" || name == "Out")
+                            fake_nodes.push_back(var.arguments(0));
+                    }
+                }    
             }
+            if (fake_node)
+                continue;
+
+            // fake node
+            if (node.inputs.empty())
+            {
+                for (int k = 0; k < op.outputs_size(); k++)
+                {
+                    paddle::framework::proto::OpDesc::Var var = op.outputs(k);
+                    std::string name = var.parameter();
+                    if (name == "Y" || name == "Output" || name == "Out")
+                        fake_nodes.push_back(var.arguments(0));
+                }
+                continue;
+            }
+
             node.name = "";
             for (int k = 0; k < op.outputs_size(); k++)
             {
@@ -385,6 +424,8 @@ bool PaddleSerializer::LoadNode(StaticGraph* graph, StaticNode* node, PaddleNode
     
     std::string tensor_name = (*input_ir).second;
     StaticTensor* in_tensor = FindTensor(graph, tensor_name);
+    if (in_tensor == nullptr)
+        return true;
     AddNodeInputTensor(node, in_tensor);
     pp_node.inputs.erase(input_ir);
     
@@ -578,6 +619,7 @@ static bool LoadPaddlePooling(StaticGraph* graph, StaticNode* node, const Paddle
 {
     PoolParam param = any_cast<PoolParam>(OpManager::GetOpDefParam("Pooling"));
     paddle::framework::proto::OpDesc op_desc = pp_node.op_desc;
+    bool adaptive_pool = false;
     for (int i = 0; i < op_desc.attrs_size(); i++)
     {
         paddle::framework::proto::OpDesc::Attr attr = op_desc.attrs(i);
@@ -610,10 +652,31 @@ static bool LoadPaddlePooling(StaticGraph* graph, StaticNode* node, const Paddle
         {
             param.global = attr.b();
         }
+        if (name == "adaptive")
+        {
+            adaptive_pool = attr.b();
+        }
     }
 
-    if (param.kernel_h == param.kernel_w == 1)
-        param.global = 1;
+    // if adaptive pool, ksize equal to output size
+    if (adaptive_pool)
+    {
+        if (param.kernel_h == 1 && param.kernel_w == 1)
+            param.global = 1;
+        
+        // stride = floor(in_size/out_size)
+        // ksize = in_size - (out_size - 1) * stride
+        else
+        {
+            StaticTensor* input = GetNodeInputTensor(graph, node, 0);
+            std::vector<int> dims = input->dims;
+            int in_h = dims[2];
+            int in_w = dims[3];
+            param.kernel_h = in_h - (param.kernel_h - 1) * param.stride_h;
+            param.kernel_w = in_w - (param.kernel_w - 1) * param.stride_w;
+        }
+    }
+    
 
     StaticOp* op = CreateStaticOp(graph, "Pooling");
     SetOperatorParam(op, param);
@@ -767,6 +830,32 @@ static bool LoadPaddleScale(StaticGraph* graph, StaticNode* node, const PaddleNo
     return true;
 }
 
+static bool LoadPaddleReLu(StaticGraph* graph, StaticNode* node, const PaddleNode& pp_node)
+{
+    ReLuParam param = any_cast<ReLuParam>(OpManager::GetOpDefParam("ReLu"));
+
+    if (pp_node.op == "relu")
+        param.negative_slope = 0.f;
+    if (pp_node.op == "leaky_relu")
+    {
+        paddle::framework::proto::OpDesc op_desc = pp_node.op_desc;
+        for (int i = 0; i < op_desc.attrs_size(); i++)
+        {
+            paddle::framework::proto::OpDesc::Attr attr = op_desc.attrs(i);
+            std::string name = attr.name();
+            if (name == "alpha")
+            {
+                param.negative_slope = attr.f();
+            }
+        }
+    }
+
+    StaticOp* op = CreateStaticOp(graph, "ReLu");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+}
+
 static bool LoadPaddleReLu6(StaticGraph* graph, StaticNode* node, const PaddleNode& pp_node)
 {
     StaticOp* op = CreateStaticOp(graph, "ReLu6");
@@ -800,6 +889,78 @@ static bool LoadPaddleSoftmax(StaticGraph* graph, StaticNode* node, const Paddle
     return true;
 }
 
+static bool LoadPaddleInterp(StaticGraph* graph, StaticNode* node, const PaddleNode& pp_node)
+{
+    InterpParam param = any_cast<InterpParam>(OpManager::GetOpDefParam("Interp"));
+    paddle::framework::proto::OpDesc op_desc = pp_node.op_desc;
+    for (int i = 0; i < op_desc.attrs_size(); i++)
+    {
+        paddle::framework::proto::OpDesc::Attr attr = op_desc.attrs(i);
+        std::string name = attr.name();
+        if (name == "scale")
+        {
+            param.height_scale = attr.floats(0);
+            param.width_scale = attr.floats(1);
+        }
+    }
+    if (pp_node.op == "nearest_interp_v2")
+        param.resize_type = 1;
+
+    StaticOp* op = CreateStaticOp(graph, "Interp");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+}
+
+static bool LoadPaddleResize(StaticGraph* graph, StaticNode* node, const PaddleNode& pp_node)
+{
+    ResizeParam param = any_cast<ResizeParam>(OpManager::GetOpDefParam("Resize"));
+    paddle::framework::proto::OpDesc op_desc = pp_node.op_desc;
+    for (int i = 0; i < op_desc.attrs_size(); i++)
+    {
+        paddle::framework::proto::OpDesc::Attr attr = op_desc.attrs(i);
+        std::string name = attr.name();
+        if (name == "scale")
+        {
+            param.scale_h = attr.floats(0);
+            param.scale_w = attr.floats(1);
+        }
+    }
+    if (pp_node.op == "nearest_interp_v2")
+        param.type = 0;
+
+    StaticOp* op = CreateStaticOp(graph, "Resize");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+}
+
+static bool LoadPaddleConcat(StaticGraph* graph, StaticNode* node, const PaddleNode& pp_node)
+{
+    ConcatParam param = any_cast<ConcatParam>(OpManager::GetOpDefParam("Concat"));
+    paddle::framework::proto::OpDesc op_desc = pp_node.op_desc;
+    for (int i = 0; i < op_desc.attrs_size(); i++)
+    {
+        paddle::framework::proto::OpDesc::Attr attr = op_desc.attrs(i);
+        std::string name = attr.name();
+        if (name == "axis")
+        {
+            param.axis = attr.i();
+        }
+    }
+    if (param.axis == -1)
+    {
+        StaticTensor* input = GetNodeInputTensor(graph, node, 0);
+        int dim_num = input->dims.size();
+        param.axis = dim_num - 1;
+    }
+
+    StaticOp* op = CreateStaticOp(graph, "Concat");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+}
+
 bool PaddleSerializerRegisterOpLoader(void)
 {
     SerializerPtr serializer;
@@ -818,8 +979,12 @@ bool PaddleSerializerRegisterOpLoader(void)
     p_paddle->RegisterOpLoadMethod("dropout", op_load_t(LoadPaddleDropout));
     p_paddle->RegisterOpLoadMethod("matmul", op_load_t(LoadPaddleFullyconnected));
     p_paddle->RegisterOpLoadMethod("scale", op_load_t(LoadPaddleScale));
+    p_paddle->RegisterOpLoadMethod("relu", op_load_t(LoadPaddleReLu));
+    p_paddle->RegisterOpLoadMethod("leaky_relu", op_load_t(LoadPaddleReLu));
     p_paddle->RegisterOpLoadMethod("relu6", op_load_t(LoadPaddleReLu6));
     p_paddle->RegisterOpLoadMethod("softmax", op_load_t(LoadPaddleSoftmax));
+    p_paddle->RegisterOpLoadMethod("nearest_interp_v2", op_load_t(LoadPaddleResize));
+    p_paddle->RegisterOpLoadMethod("concat", op_load_t(LoadPaddleConcat));
 
     return true;
 }
