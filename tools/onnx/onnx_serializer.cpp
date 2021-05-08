@@ -1768,6 +1768,26 @@ static bool LoadOnnxOr(StaticGraph* graph, StaticNode* node, const onnx::NodePro
 static bool LoadOnnxPad(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
     PadParam param = any_cast<PadParam>(OpManager::GetOpDefParam("Pad"));
+    
+    if (onnx_node.attribute_size() == 1){  // since opset 11, 'pads' and 'value' have been moved from attributes to inputs
+        const std::string& input_name_pad = onnx_node.input(1);
+        StaticTensor* tensor_pad = FindTensor(graph, input_name_pad);
+        int64_t* data_pad = ( int64_t * )GetConstTensorBuffer(tensor_pad);
+        param.pad_0_h = data_pad[0];
+        param.pad_0_w = data_pad[4];
+        param.pad_1_h = data_pad[1];
+        param.pad_1_w = data_pad[5];
+        param.pad_2_h = data_pad[2];
+        param.pad_2_w = data_pad[6];
+        param.pad_3_h = data_pad[3];
+        param.pad_3_w = data_pad[7];
+
+        const std::string& input_name_value = onnx_node.input(2);
+        StaticTensor* tensor_value = FindTensor(graph, input_name_value);
+        float* data_value = ( float * )GetConstTensorBuffer(tensor_value);
+        param.value = data_value[0];
+    }
+    
     for (int k = 0; k < onnx_node.attribute_size(); k++)
     {
         const onnx::AttributeProto& attr = onnx_node.attribute(k);
