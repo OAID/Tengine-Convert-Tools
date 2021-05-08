@@ -75,6 +75,7 @@
 #include "operator/depthtospace_param.hpp"
 #include "operator/lstm_param.hpp"
 #include "operator/instancenorm_param.hpp"
+#include "operator/resize_param.hpp"
 
 #include "type_name.hpp"
 #include "compiler.hpp"
@@ -1117,43 +1118,6 @@ static bool LoadOnnxPRelu(StaticGraph* graph, StaticNode* node, const onnx::Node
 
 static bool LoadOnnxInterp(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
-    StaticOp* op = CreateStaticOp(graph, "Interp");
-
-    InterpParam param = any_cast<InterpParam>(OpManager::GetOpDefParam("Interp"));
-
-    if (onnx_node.input_size() == 1)
-    {
-        for (int k = 0; k < onnx_node.attribute_size(); k++)
-        {
-            const onnx::AttributeProto& attr = onnx_node.attribute(k);
-            if (attr.name() == "scales")
-            {
-                if (attr.floats_size() == 4)
-                {
-                    float num0 = attr.floats(0);
-                    float num1 = attr.floats(1);
-                    float num2 = attr.floats(2);
-                    float num3 = attr.floats(3);
-                    param.height_scale = num2 / num0;
-                    param.width_scale = num3 / num1;
-                }
-                else
-                {
-                    param.height_scale = attr.f();
-                    param.width_scale = attr.f();
-                }
-            }
-        }
-    }
-    else
-    {
-        const std::string& input_name = onnx_node.input(1);
-        StaticTensor* tensor = FindTensor(graph, input_name);
-        float* data = ( float* )GetConstTensorBuffer(tensor);
-
-        param.height_scale = data[2];
-        param.width_scale = data[3];
-    }
 
     std::string mode = "nearest";
     for (int k = 0; k < onnx_node.attribute_size(); k++)
@@ -1165,19 +1129,79 @@ static bool LoadOnnxInterp(StaticGraph* graph, StaticNode* node, const onnx::Nod
             mode = attr.s();
         }
     }
+    if(mode != "nearest"){
+        StaticOp* op = CreateStaticOp(graph, "Interp");
 
-    if (mode == "nearest")
-    {
-        param.resize_type = 1;
+        InterpParam param = any_cast<InterpParam>(OpManager::GetOpDefParam("Interp"));
+
+        if (onnx_node.input_size() == 1)
+        {
+            for (int k = 0; k < onnx_node.attribute_size(); k++)
+            {
+                const onnx::AttributeProto& attr = onnx_node.attribute(k);
+                if (attr.name() == "scales")
+                {
+                    if (attr.floats_size() == 4)
+                    {
+                        float num0 = attr.floats(0);
+                        float num1 = attr.floats(1);
+                        float num2 = attr.floats(2);
+                        float num3 = attr.floats(3);
+                        param.height_scale = num2 / num0;
+                        param.width_scale = num3 / num1;
+                    }
+                    else
+                    {
+                        param.height_scale = attr.f();
+                        param.width_scale = attr.f();
+                    }
+                }
+            }
+        }
+        else
+        {
+            const std::string& input_name = onnx_node.input(1);
+            StaticTensor* tensor = FindTensor(graph, input_name);
+            float* data = ( float* )GetConstTensorBuffer(tensor);
+
+            param.height_scale = data[2];
+            param.width_scale = data[3];
+        }
+        if (mode == "nearest")
+        {
+            param.resize_type = 1;
+        }
+        else if (mode == "bilinear" || mode == "linear")
+        {
+            param.resize_type = 2;
+        }
+
+        SetOperatorParam(op, param);
+
+        SetNodeOp(node, op);
+    } else {
+        StaticOp* op = CreateStaticOp(graph, "Resize");
+        ResizeParam param = any_cast<ResizeParam>(OpManager::GetOpDefParam("Resize"));
+
+
+        if (onnx_node.input_size() == 2)
+        {
+            const std::string& input_name = onnx_node.input(1);
+            StaticTensor* tensor = FindTensor(graph, input_name);
+            float* data = ( float* )GetConstTensorBuffer(tensor);
+
+            param.scale_h = data[2];
+            param.scale_w = data[3];
+        } else {
+            param.scale_w = 1.f;
+            param.scale_h = 1.f;
+        }
+        SetOperatorParam(op, param);
+        SetNodeOp(node, op);
+
     }
-    else if (mode == "bilinear" || mode == "linear")
-    {
-        param.resize_type = 2;
-    }
 
-    SetOperatorParam(op, param);
-
-    SetNodeOp(node, op);
+   
 
     return true;
 }
