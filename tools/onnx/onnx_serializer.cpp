@@ -77,6 +77,7 @@
 #include "operator/instancenorm_param.hpp"
 #include "operator/resize_param.hpp"
 
+
 #include "type_name.hpp"
 #include "compiler.hpp"
 
@@ -330,7 +331,7 @@ bool OnnxSerializer::LoadConstTensor(StaticGraph* graph, const onnx::GraphProto&
     
     /* record the necessary const tesnors */
     std::vector<std::string> tensor_check;
-    for (int i = 0; i < onnx_graph.node_size(); i++)
+    for (int i = 0; i < onnx_grap.node_size(); i++)
     {
         const onnx::NodeProto& onnx_node = onnx_graph.node(i);
 
