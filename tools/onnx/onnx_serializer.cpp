@@ -534,6 +534,7 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
     for(int i = 0; i < onnx_node.input_size(); i++)
     {
         const std::string& input_name = onnx_node.input(i);
+        
         if (input_name == "")
         {
             continue;
@@ -1802,6 +1803,23 @@ static bool LoadOnnxPad(StaticGraph* graph, StaticNode* node, const onnx::NodePr
             param.value = attr.f();
         }
     }
+    if(onnx_node.input_size() > 1){
+        StaticTensor* shape_tensor = FindTensor(graph, onnx_node.input(1));
+        int size = shape_tensor->dims[0];
+        int64_t* data = ( int64_t* )GetConstTensorBuffer(shape_tensor);
+        for (int i = 0; i < size; i++)
+        {
+                param.pad_0_h = data[0];
+                param.pad_0_w = data[4];
+                param.pad_1_h = data[1];
+                param.pad_1_w = data[5];
+                param.pad_2_h = data[2];
+                param.pad_2_w = data[6];
+                param.pad_3_h = data[3];
+                param.pad_3_w = data[7];
+        }
+    }
+
     StaticOp* op = CreateStaticOp(graph, "Pad");
 
     SetOperatorParam(op, param);
