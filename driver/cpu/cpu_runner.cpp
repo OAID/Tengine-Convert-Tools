@@ -340,13 +340,15 @@ bool CPURunner::UnbindNodeOps(Subgraph* sub_graph)
 
 bool CPURunner::OptimizeGraph(Subgraph* optimized_graph)
 {
+    #if 1
     GraphOptimizerManager::RunOpt("BNScale", optimized_graph);
     GraphOptimizerManager::RunOpt("FcBn", optimized_graph);
     GraphOptimizerManager::RunOpt("UnsEltConv", optimized_graph);
     GraphOptimizerManager::RunOpt("ConvBN", optimized_graph);
     GraphOptimizerManager::RunOpt("ConvReLu", optimized_graph);
     GraphOptimizerManager::RunOpt("ConvReLu6", optimized_graph);
-
+    GraphOptimizerManager::RunOpt("SigMul", optimized_graph);
+    #endif
 
     return true;
 }
