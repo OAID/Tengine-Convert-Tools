@@ -47,6 +47,7 @@ static bool GraphFuseRelu6(Graph* graph, GraphOptimizer* opt);
 static void AddConstNodeToSubGraph(Subgraph* graph, Tensor* tensor, Node* fused_node, int fused_port_index);
 static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt);
 static bool GraphFusedConvUnsqueeze(Graph* graph, GraphOptimizer* opt);
+static bool GraphFusedSigmoidMul(Graph* graph, GraphOptimizer* opt);
 
 static bool Weight_Bn(Subgraph* graph, Node* ConvNode, float* mean, float* var, float* gamma, float* beta, float eps,
                       float rescale_factor, Tensor* bias_tensor)
@@ -853,15 +854,13 @@ static bool GraphFusedConvUnsqueeze(Graph* graph, GraphOptimizer* opt)
     int node_number = graph->seq_nodes.size();
     std::vector<Subgraph*> orig_sub;
     std::vector<int> op_flag;
-
     for (int i = 0; i < node_number; i++)
     {
         Node* Elt_node = graph->seq_nodes[i];
         Operator* op = Elt_node->GetOp();
-
         if (op->GetName() != "Eltwise")
             continue;
-
+        
         Tensor* input_tensor_0;
         Tensor* input_tensor_1;
         Node* Us_node;
@@ -869,14 +868,16 @@ static bool GraphFusedConvUnsqueeze(Graph* graph, GraphOptimizer* opt)
 
         input_tensor_1 = Elt_node->GetInputTensor(0);
         input_tensor_0 = Elt_node->GetInputTensor(1);
+        if(input_tensor_0 == NULL || input_tensor_1 == NULL)
+            continue;
         Us_node = input_tensor_0->producer->owner;
         Conv_node = input_tensor_1->producer->owner;
         Operator* Us_op = Us_node->GetOp();
+        
         Operator* Conv_op = Conv_node->GetOp();
-
+        
         if ((Us_op->GetName() != "Unsqueeze" && Conv_op->GetName() != "Convolution") || (Us_op->GetName() != "Unsqueeze" && Conv_op->GetName() != "FullyConnected"))
             continue;
-
 
         if(Us_op->GetName() == "Unsqueeze" && Conv_op->GetName() == "Convolution"){
             op_flag.push_back(1);
@@ -976,6 +977,118 @@ static bool GraphFusedConvUnsqueeze(Graph* graph, GraphOptimizer* opt)
     return true;
 }
 
+static bool GraphFusedSigmoidMul(Graph* graph, GraphOptimizer* opt)
+{
+    int node_number = graph->seq_nodes.size();
+    std::vector<Subgraph*> orig_sub;
+    std::vector<int> op_flag;
+    for (int i = 0; i < node_number; i++)
+    {
+        Node* Elt_node = graph->seq_nodes[i];
+        Operator* op = Elt_node->GetOp();
+        if (op->GetName() != "Eltwise")
+            continue;
+        
+        Eltwise* elt_op = dynamic_cast<Eltwise*>(op);
+        EltwiseParam* elt_param = elt_op->GetParam();
+        if (elt_param ->type != 0)
+            continue;
+        Node* Sig_node;
+        Tensor* input_tensor_0;
+        Tensor* input_tensor_1;
+        if(Elt_node->GetInputNum() < 2){
+            continue;
+        }
+        input_tensor_0 = Elt_node->GetInputTensor(0);
+        input_tensor_1 = Elt_node->GetInputTensor(1);
+        printf("3\n");
+        if(input_tensor_0 == NULL || input_tensor_1 == NULL){
+            continue;
+        }
+        Node* tmp_node0;
+        Node* tmp_node1;
+
+        tmp_node0 = input_tensor_0->producer->owner;
+        tmp_node1 = input_tensor_1->producer->owner;
+
+        Operator* tmp_op0 = tmp_node0->GetOp();
+        Operator* tmp_op1 = tmp_node1->GetOp();
+
+        if(tmp_op0 ->GetName() == "Sigmoid"){
+            Sig_node = tmp_node0;
+        }
+        if(tmp_op1 ->GetName() == "Sigmoid"){
+            Sig_node = tmp_node1;
+        }
+        Operator* Sig_op = Sig_node->GetOp();
+        if ((Sig_op->GetName() != "Sigmoid"))
+            continue;
+
+                
+        /*Create a subgrah represent the chain*/
+        Subgraph* sub = new Subgraph("sigmoid_mul_chain");
+
+        sub->seq_nodes.push_back(Sig_node);
+        sub->seq_nodes.push_back(Elt_node);
+
+        sub->input_nodes.push_back(Sig_node);
+        sub->output_nodes.push_back(Elt_node);
+
+        /* add const node into seq nodes */
+        for (unsigned int i = 1; i < Sig_node->GetInputNum(); i++)
+        {
+            Tensor* tensor = Sig_node->GetInputTensor(i);
+            sub->seq_nodes.push_back(tensor->producer->owner);
+        }
+        for (unsigned int i = 1; i < Elt_node->GetInputNum(); i++)
+        {
+            Tensor* tensor = Elt_node->GetInputTensor(i);
+            sub->seq_nodes.push_back(tensor->producer->owner);
+        }
+        orig_sub.push_back(sub);
+    }
+    /*replace the nodes of the graph*/
+    for (unsigned int i = 0; i < orig_sub.size(); i++)
+    {
+        Subgraph fused("fused");
+        Subgraph* orig = orig_sub[i];
+
+        Node* orig_output = orig->output_nodes[0];
+        Node* orig_input = orig->input_nodes[0];
+
+        std::string node_name = orig_input->GetName();
+
+        /*create new Node node*/
+        Node* fused_node = new Node(node_name);
+        Operator* new_conv_op = NULL;
+        new_conv_op = OpManager::CreateOp("HardSwish");
+
+        fused_node->SetDynamicShape(orig_input->IsDynamicShape());
+        fused_node->MergeAttr(orig_output);
+        fused_node->MergeAttr(orig_input);
+        fused_node->SetOp(new_conv_op);
+
+        Tensor* output_tensor = orig_output->GetOutputTensor(0);
+        fused_node->AddOutputTensor(output_tensor);
+
+        Tensor* input_tensor = orig_input->GetInputTensor(0);
+        fused_node->AddInputTensor(input_tensor);
+        fused.seq_nodes.push_back(fused_node);
+        fused.input_nodes.push_back(fused_node);
+        fused.output_nodes.push_back(fused_node);
+        fused.SetNodeOwner(fused_node);
+
+        /* create new const node for convolution */
+        graph->Replace(orig, &fused);
+    }
+    /* release orig_sub */
+    for (unsigned int i = 0; i < orig_sub.size(); i++)
+    {
+        Subgraph* orig = orig_sub[i];
+        delete orig;
+    }
+    return true;
+}
 bool GraphOptimizerManager::RunOpt(const std::string& name, Graph* graph)
 {
     if (!Find(name))
@@ -1023,6 +1136,11 @@ void GraphOptimizerManager::Init(void)
     opt = new GraphOptimizer();
     opt->name = "UnsEltConv";
     opt->optimizer = graph_opt_t(GraphFusedConvUnsqueeze);
+    Add(opt->name, opt);
+
+    opt = new GraphOptimizer();
+    opt->name = "SigMul";
+    opt->optimizer = graph_opt_t(GraphFusedSigmoidMul);
     Add(opt->name, opt);
 }
 
