@@ -347,7 +347,7 @@ bool CPURunner::OptimizeGraph(Subgraph* optimized_graph)
     GraphOptimizerManager::RunOpt("ConvBN", optimized_graph);
     GraphOptimizerManager::RunOpt("ConvReLu", optimized_graph);
     GraphOptimizerManager::RunOpt("ConvReLu6", optimized_graph);
-    GraphOptimizerManager::RunOpt("SigMul", optimized_graph);
+    // GraphOptimizerManager::RunOpt("SigMul", optimized_graph);
     #endif
     return true;
 }
