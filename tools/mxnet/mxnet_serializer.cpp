@@ -61,6 +61,8 @@
 #include "operator/psroipooling_param.hpp"
 #include "operator/unary_param.hpp"
 #include "operator/broadmul.hpp"
+#include "operator/spatialtransformer_param.hpp"
+#include "operator/l2normalization.hpp"
 //#define DEBUG
 
 namespace TEngine {
@@ -1659,6 +1661,56 @@ static bool LoadMxnetElemwiseMul(StaticGraph* graph, StaticNode* node, const Mxn
 
     return true;
 }
+#if 1
+static bool LoadMxnetL2Normalization(StaticGraph* graph, StaticNode* node, const MxnetNode& mxnet_node)
+{
+    StaticOp* op = CreateStaticOp(graph, "L2Normalization");
+    SetNodeOp(node, op);
+
+    return true;
+}
+#endif
+static bool LoadMxnetSpatialTransformer(StaticGraph* graph, StaticNode* node, const MxnetNode& mxnet_node)
+{
+    SpatialTransformerParam param = any_cast<SpatialTransformerParam>(OpManager::GetOpDefParam("SpatialTransformer"));
+
+    const_iterator cit1, cit2, cit3;
+    cit1 = mxnet_node.attrs.find("sampler_type");
+    cit2 = mxnet_node.attrs.find("target_shape");
+    cit3 = mxnet_node.attrs.find("transform_type");
+
+    std::vector<int> v1;
+
+    if (cit1 != mxnet_node.attrs.end())
+    {
+        if(cit1->second == "bilinear"){
+            param.sampler_type = 1;
+        } else if (cit1->second == "nearest"){
+            param.sampler_type = 0;
+        } else {
+            param.sampler_type = -1;
+        }
+    }
+    if (cit2 != mxnet_node.attrs.end())
+    {
+        ParseAttr(cit2->second, v1);
+        param.target_shape.push_back(v1.at(0));
+        param.target_shape.push_back(v1.at(1));
+    }
+    if (cit3 != mxnet_node.attrs.end())
+    {
+        if(cit3->second == "affine")
+            param.transform_type = 0;
+        else
+            param.transform_type = -1;
+    }
+
+    StaticOp* op = CreateStaticOp(graph, "SpatialTransformer");
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+
+    return true;
+}
 
 bool MxnetSerializerRegisterOpLoader(void)
 {
@@ -1720,6 +1772,8 @@ bool MxnetSerializerRegisterOpLoader(void)
     p_mxnet->RegisterOpLoadMethod("_plus_scalar", op_load_t(LoadMxnetEltScalar));
     p_mxnet->RegisterOpLoadMethod("elemwise_mul", op_load_t(LoadMxnetElemwiseMul));
 
+    p_mxnet->RegisterOpLoadMethod("L2Normalization", op_load_t(LoadMxnetL2Normalization));
+    p_mxnet->RegisterOpLoadMethod("SpatialTransformer", op_load_t(LoadMxnetSpatialTransformer));
     return true;
 }
 

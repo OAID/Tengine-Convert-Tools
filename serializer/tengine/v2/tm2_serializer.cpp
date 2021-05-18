@@ -212,7 +212,7 @@ tm_uoffset_t TmSerializer2::SaveTmNode(void* const start_ptr, tm_uoffset_t* cur_
 
     unsigned int input_num = node->GetInputNum();
     unsigned int output_num = node->GetOutputNum();
-
+    // printf("%s \n", node->GetName().c_str());
     if(input_num)
     {
         /* Write the vector of input indices */
@@ -221,7 +221,9 @@ tm_uoffset_t TmSerializer2::SaveTmNode(void* const start_ptr, tm_uoffset_t* cur_
         v_input_indices->v_num = input_num;
         for(unsigned int i = 0; i < input_num; i++)
         {
+            // printf("start input %d  %d %d %d \n", i, input_num, node->GetInputNum(), output_num);
             Tensor* p_tensor = node->GetInputTensor(i);
+            // printf("%s \n", p_tensor->GetName().c_str());
             v_input_indices->indices[i] = tensor_name_map[p_tensor->GetName()];
         }
         tm_node.offset_vi_input_tensors = WriteTmObject(start_ptr, cur_pos, v_input_indices, vector_size);
@@ -276,7 +278,6 @@ tm_uoffset_t TmSerializer2::SaveTmNode(void* const start_ptr, tm_uoffset_t* cur_
         TM2_Attr tm_attr;
         std::string attr_name = it->first;
         CustomNodeAttr attr = it->second;
-
         TM2_String tm_attr_name, tm_attr_val;
         tm_attr_name.size = attr_name.size() + 1;    // including trailing \0
         tm_attr_name.offset_data = WriteTmFileAlign1(start_ptr, cur_pos, attr_name.c_str(), attr_name.size());
@@ -302,7 +303,6 @@ tm_uoffset_t TmSerializer2::SaveTmNode(void* const start_ptr, tm_uoffset_t* cur_
     }
     tm_node.offset_vo_attrs = WriteTmObject(start_ptr, cur_pos, v_attrs, vector_size);
     free(v_attrs);
-
     /* Write the node */
     return WriteTmObject(start_ptr, cur_pos, &tm_node, sizeof(TM2_Node));
 }

@@ -134,6 +134,8 @@
 #include "operator/mish.hpp"
 #include "operator/softplus.hpp"
 #include "operator/reciprocal.hpp"
+#include "operator/spatialtransformer.hpp"
+#include "operator/nms.hpp"
 
 using namespace TEngine;
 
@@ -249,6 +251,8 @@ int operator_plugin_init(void)
     RegisterOp<Mish>("Mish");
     RegisterOp<Softplus>("Softplus");
     RegisterOp<Reciprocal>("Reciprocal");
+    RegisterOp<SpatialTransformer>("SpatialTransformer");
+    RegisterOp<NMS>("NMS");
     // std::cout<<"OPERATOR PLUGIN INITED\n";
     return 0;
 }
