@@ -1659,7 +1659,45 @@ bool LoadTmReciprocalOp(StaticGraph* graph, StaticNode* node, void* const start_
     SetNodeOp(node, op);
     return true;
 }
+bool LoadTmNMSOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
+{
+    const std::string& op_str = TM2_OPSTR_NMS;
 
+    NMSParam param = any_cast<NMSParam>(OpManager::GetOpDefParam(op_str));
+    const TM2_NMSParam* tm_param = GetTmPtr<TM2_NMSParam>(start_ptr, tm_op->offset_t_param);
+
+    param.max_class = tm_param->max_class;
+    param.iou_threshold = tm_param->iou_threshold;
+    param.score_threshold = tm_param->score_threshold;
+
+    StaticOp* op = CreateStaticOp(graph, op_str);
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+}
+bool LoadTmSpatialTransformerOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
+{
+    const std::string& op_str = TM2_OPSTR_SPATIALTRANSFORMER;
+
+    SpatialTransformerParam param = any_cast<SpatialTransformerParam>(OpManager::GetOpDefParam(op_str));
+    const TM2_SpatialTransformerParam* tm_param = GetTmPtr<TM2_SpatialTransformerParam>(start_ptr, tm_op->offset_t_param);
+    param.sampler_type = tm_param->sampler_type;
+    param.transform_type = tm_param->transformer_type;
+
+    if(tm_param->offset_ta_shape != TM2_NOT_SET)
+    {
+        const TM2_Vector_dims* v_ta_shape = GetTmPtr<TM2_Vector_dims>(start_ptr, tm_param->offset_ta_shape);
+        for(unsigned int i = 0; i < v_ta_shape->v_num; i++){
+            param.target_shape.push_back(v_ta_shape->dims[i]);
+        }
+    }
+
+    StaticOp* op = CreateStaticOp(graph, op_str);
+    SetOperatorParam(op, param);
+    SetNodeOp(node, op);
+    return true;
+
+}
 op_load_t LoadTmOpFunc(uint32_t op_type)
 {
     switch(op_type)
@@ -1872,6 +1910,10 @@ op_load_t LoadTmOpFunc(uint32_t op_type)
             return LoadTmSoftplusOp;
         case TM2_OPTYPE_RECIPROCAL:
             return LoadTmReciprocalOp;
+        case TM2_OPTYPE_NMS:
+            return LoadTmNMSOp;
+        case TM2_OPTYPE_SPATIALTRANSFORMER:
+            return LoadTmSpatialTransformerOp;
         default:
             LOG_ERROR() << "Operator #" << op_type << " not supported in tengine model yet\n";
             return nullptr;
@@ -2104,6 +2146,10 @@ std::string GetOpStr(uint32_t op_type)
             return std::string(TM2_OPSTR_SOFTPLUS);
         case TM2_OPTYPE_RECIPROCAL:
             return std::string(TM2_OPSTR_RECIPROCAL);
+        case TM2_OPTYPE_NMS:
+            return std::string(TM2_OPSTR_NMS);
+        case TM2_OPTYPE_SPATIALTRANSFORMER:
+            return std::string(TM2_OPSTR_SPATIALTRANSFORMER);
         default:
             LOG_ERROR() << "Get operator string failed\n";
             return std::string("");

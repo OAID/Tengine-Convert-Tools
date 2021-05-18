@@ -1255,7 +1255,6 @@ tm_uoffset_t SaveTmInstanceNormOp(void* const start_ptr, tm_uoffset_t* cur_pos, 
     TM2_InstanceNormParam tm_param;
     memset(&tm_param, 0, sizeof(TM2_InstanceNormParam));
     tm_param.eps = p->eps;
-
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     SetTmOperator(&tm_op, TM2_OPTYPE_INSTANCENORM, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_InstanceNormParam)));
@@ -1725,7 +1724,51 @@ tm_uoffset_t SaveTmReciprocalOp(void* const start_ptr, tm_uoffset_t* cur_pos, Op
     SetTmOperator(&tm_op, TM2_OPTYPE_RECIPROCAL, TM2_NOT_SET);
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
+tm_uoffset_t SaveTmNMSOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    NMSParam* p = (dynamic_cast<NMS*>(op))->GetParam();
+    TM2_NMSParam tm_param;
+    memset(&tm_param, 0, sizeof(TM2_NMSParam));
+    tm_param.max_class = p->max_class;
+    tm_param.iou_threshold = p->iou_threshold;
+    tm_param.score_threshold = p->score_threshold;
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_NMS, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_NMSParam)));
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
 
+
+tm_uoffset_t SaveTmSpatialTransformerOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    SpatialTransformerParam* p = (dynamic_cast<SpatialTransformer*>(op))->GetParam();
+    TM2_SpatialTransformerParam tm_param;
+    memset(&tm_param, 0, sizeof(TM2_SpatialTransformerParam));
+    tm_param.sampler_type = p->sampler_type;
+    tm_param.transformer_type = p->transform_type;
+
+    if((p->target_shape).size())
+    {
+        size_t vector_size = sizeof(tm_size_t) + sizeof(int32_t) * (p->target_shape).size();
+        TM2_Vector_dims* v_ta_shape = ( TM2_Vector_dims* )malloc(vector_size);
+        v_ta_shape->v_num = (p->target_shape).size();
+        for(unsigned int i = 0; i < (p->target_shape).size(); i++)
+        {
+            v_ta_shape->dims[i] = p->target_shape[i];
+        }
+        tm_param.offset_ta_shape = WriteTmObject(start_ptr, cur_pos, v_ta_shape, vector_size);
+        free(v_ta_shape);
+    }
+    else{
+        tm_param.offset_ta_shape = TM2_NOT_SET;
+    }
+
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_SPATIALTRANSFORMER, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_SpatialTransformerParam)));
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+
+}
 op_save_t SaveTmOpFunc(uint32_t op_type)
 {
     switch(op_type)
@@ -1938,6 +1981,10 @@ op_save_t SaveTmOpFunc(uint32_t op_type)
             return SaveTmSoftplusOp;
         case TM2_OPTYPE_RECIPROCAL:
             return SaveTmReciprocalOp;
+        case TM2_OPTYPE_NMS:
+            return SaveTmNMSOp;
+        case TM2_OPTYPE_SPATIALTRANSFORMER:
+            return SaveTmSpatialTransformerOp;
         default:
             LOG_ERROR() << "Operator #" << op_type << " not supported in tengine model yet\n";
             return nullptr;

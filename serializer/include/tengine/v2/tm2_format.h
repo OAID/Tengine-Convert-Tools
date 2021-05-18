@@ -150,6 +150,8 @@ typedef uint8_t tm_bool_t; /* bool is 1-byte unsigned integer */
 #define TM2_OPSTR_L2NORMALIZATION "L2Normalization"
 #define TM2_OPSTR_SOFTPLUS "Softplus"
 #define TM2_OPSTR_RECIPROCAL "Reciprocal"
+#define TM2_OPSTR_NMS "NMS"
+#define TM2_OPSTR_SPATIALTRANSFORMER "SpatialTransformer"
 /* Operator types */
 #define TM2_OPTYPE_ACCURACY 0 /* No Param                 */
 #define TM2_OPTYPE_BATCHNORMALIZATION 1 /* TM2_BatchNormParam       */
@@ -255,7 +257,9 @@ typedef uint8_t tm_bool_t; /* bool is 1-byte unsigned integer */
 #define TM2_OPTYPE_L2NORMALIZATION 101
 #define TM2_OPTYPE_SOFTPLUS 102
 #define TM2_OPTYPE_RECIPROCAL 103
-#define TM2_OPTYPE_NUM 104
+#define TM2_OPTYPE_NMS 104
+#define TM2_OPTYPE_SPATIALTRANSFORMER 105
+#define TM2_OPTYPE_NUM 106
 
 /* --------------------- -------- TM objects -------------------------------- */
 
@@ -977,6 +981,21 @@ typedef struct
     int type;
 
 }TM2_L2PoolParam;
+
+typedef struct 
+{
+    int sampler_type;
+    int transformer_type;
+    tm_uoffset_t offset_ta_shape;
+}TM2_SpatialTransformerParam;
+
+
+typedef struct
+{
+    int max_class;
+    int iou_threshold;
+    int score_threshold;
+}TM2_NMSParam;
 
 #ifdef __cplusplus
 }
