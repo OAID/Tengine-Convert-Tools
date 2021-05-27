@@ -534,22 +534,25 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
     for(int i = 0; i < onnx_node.input_size(); i++)
     {
         const std::string& input_name = onnx_node.input(i);
-        
         if (input_name == "")
         {
             continue;
         }
         StaticTensor* tensor = FindTensor(graph, input_name);
         StaticTensor* new_tensor = nullptr;
+        std::string onnx_tensor_name = input_name;
+ 
         if(node_name[tensor->name] != 0){
-            if(tensor->dims.size() == 0){
+            if(tensor->dims.size() == 0 || tensor->dims.size() == 1){
                 AddNodeInputTensor(node, tensor);
                 continue;
             }
+            
             std::string new_tensor_name  = tensor->name + "_" + std::to_string(node_name[tensor->name]);
             new_tensor = CreateStaticConstTensor(graph, new_tensor_name);
             std::vector<int> dims = tensor->dims;
             int dim_size = tensor->dims.size();
+
             int tensor_size = 1;
             for(int t = 0; t < dim_size; t++){
                 tensor_size *= dims[t];
@@ -577,7 +580,6 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
             node_name[tensor->name] = node_name[tensor->name] + 1;
         }
     }
-
     for (int i = 0; i < onnx_node.output_size(); i++)
     {
         const std::string& onnx_op_name = onnx_node.op_type();

@@ -1266,7 +1266,6 @@ static bool GraphFuseConvReLuCommon(Graph* graph, GraphOptimizer* opt, bool relu
 
         /* create new const node for convolution */
         Tensor* weight = orig_input->GetInputTensor(1);
-
         AddConstNodeToSubGraph(&fused, weight, fused_node, 1);
 
         bool has_bias = orig_input->GetInputNum() > 2 ? true : false;
