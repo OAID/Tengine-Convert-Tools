@@ -534,37 +534,27 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
     for(int i = 0; i < onnx_node.input_size(); i++)
     {
         const std::string& input_name = onnx_node.input(i);
-        
         if (input_name == "")
         {
             continue;
         }
         StaticTensor* tensor = FindTensor(graph, input_name);
         StaticTensor* new_tensor = nullptr;
-        // std::vector<std::string>::iterator iter = std::find(node_name.begin(), node_name.end(),tensor->name);
-        std::string onnx_tensor_name = input_name;
-        std::vector<std::string>::iterator iter = std::find(tensor_name_list.begin(), tensor_name_list.end(), input_name);
-        if (iter == tensor_name_list.end())
-        {
-            tensor_name_list.push_back(onnx_tensor_name);
-        }
-        else
-        {
-            repeat_name_flag = true;
-        }
 
-        if (node_name[tensor->name] != 0 && repeat_name_flag)
-        {
-            repeat_name_flag = false;
-            if (tensor->dims.size() == 0)
-            {
+        std::string onnx_tensor_name = input_name;
+ 
+        if(node_name[tensor->name] != 0){
+            if(tensor->dims.size() == 0 || tensor->dims.size() == 1){
                 AddNodeInputTensor(node, tensor);
                 continue;
             }
-            std::string new_tensor_name = tensor->name + "_" + std::to_string(node_name[tensor->name]);
+            
+            std::string new_tensor_name  = tensor->name + "_" + std::to_string(node_name[tensor->name]);
+
             new_tensor = CreateStaticConstTensor(graph, new_tensor_name);
             std::vector<int> dims = tensor->dims;
             int dim_size = tensor->dims.size();
+
             int tensor_size = 1;
             for (int t = 0; t < dim_size; t++)
             {
