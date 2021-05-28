@@ -250,7 +250,7 @@ void OnnxSerializer::LoadConstNode(const onnx::GraphProto& onnx_graph, StaticGra
             SetNodeOp(node_create, op);
             AddNodeOutputTensor(node_create, tensor);
         }
-        if (op == "Div")
+        if (op == "Div" || op == "Resize")
         {
             const onnx::TensorProto& shape_tensor = node_tensor[node.input(1)];
             StaticTensor* tensor = CreateStaticConstTensor(graph, node.input(1));
@@ -540,9 +540,7 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
         }
         StaticTensor* tensor = FindTensor(graph, input_name);
         StaticTensor* new_tensor = nullptr;
-
         std::string onnx_tensor_name = input_name;
- 
         if(node_name[tensor->name] != 0){
             if(tensor->dims.size() == 0 || tensor->dims.size() == 1){
                 AddNodeInputTensor(node, tensor);
@@ -550,7 +548,6 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
             }
             
             std::string new_tensor_name  = tensor->name + "_" + std::to_string(node_name[tensor->name]);
-
             new_tensor = CreateStaticConstTensor(graph, new_tensor_name);
             std::vector<int> dims = tensor->dims;
             int dim_size = tensor->dims.size();
@@ -2923,6 +2920,14 @@ static bool LoadOnnxResize(StaticGraph* graph, StaticNode* node, const onnx::Nod
         param.height_scale = data[2];
         param.width_scale = data[3];
     }
+    else if (onnx_node.input_size() == 4){
+        const std::string& input_name = onnx_node.input(3);
+        StaticTensor* tensor = FindTensor(graph, input_name);
+        float* data = ( float* )GetConstTensorBuffer(tensor);
+
+        param.height_scale = data[2];
+        param.width_scale = data[3];
+    }
     else
     {
         fprintf(stderr, "Not support the num of inputs > 3, please check the onnx model or update the codes of convert tool\n");
@@ -2949,7 +2954,6 @@ static bool LoadOnnxResize(StaticGraph* graph, StaticNode* node, const onnx::Nod
     {
         param.resize_type = 2;
     }
-
     SetOperatorParam(op, param);
     SetNodeOp(node, op);
 
