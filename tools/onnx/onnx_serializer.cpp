@@ -540,6 +540,7 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
         }
         StaticTensor* tensor = FindTensor(graph, input_name);
         StaticTensor* new_tensor = nullptr;
+
         std::string onnx_tensor_name = input_name;
  
         if(node_name[tensor->name] != 0){
@@ -549,21 +550,23 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
             }
             
             std::string new_tensor_name  = tensor->name + "_" + std::to_string(node_name[tensor->name]);
+
             new_tensor = CreateStaticConstTensor(graph, new_tensor_name);
             std::vector<int> dims = tensor->dims;
             int dim_size = tensor->dims.size();
 
             int tensor_size = 1;
-            for(int t = 0; t < dim_size; t++){
+            for (int t = 0; t < dim_size; t++)
+            {
                 tensor_size *= dims[t];
             }
             SetTensorDim(new_tensor, dims);
             SetTensorDataType(new_tensor, DataType::GetTypeID("float32"));
-            tensor_size = 4*tensor_size;
+            tensor_size = 4 * tensor_size;
             SetTensorSize(tensor, tensor_size);
             uint8_t* mem_buf = ( uint8_t* )std::malloc(tensor_size);
             uint8_t* raw_data = ( uint8_t* )GetConstTensorBuffer(tensor);
-            for(int i = 0; i < tensor_size; i++)
+            for (int i = 0; i < tensor_size; i++)
             {
                 mem_buf[i] = raw_data[i];
             }
@@ -574,8 +577,10 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
             SetNodeOp(new_node, op);
             AddNodeOutputTensor(new_node, new_tensor);
             AddNodeInputTensor(node, new_tensor);
-            node_name[tensor->name] = node_name[tensor->name] + 1; 
-        } else {
+            node_name[tensor->name] = node_name[tensor->name] + 1;
+        }
+        else
+        {
             AddNodeInputTensor(node, tensor);
             node_name[tensor->name] = node_name[tensor->name] + 1;
         }
@@ -588,7 +593,7 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
             continue;
 
         const std::string& output_name = onnx_node.output(i);
-        
+
         if (output_name == "")
             continue;
 
