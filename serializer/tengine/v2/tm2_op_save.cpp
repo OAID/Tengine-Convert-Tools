@@ -1724,6 +1724,14 @@ tm_uoffset_t SaveTmReciprocalOp(void* const start_ptr, tm_uoffset_t* cur_pos, Op
     SetTmOperator(&tm_op, TM2_OPTYPE_RECIPROCAL, TM2_NOT_SET);
     return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
 }
+
+tm_uoffset_t SaveTmIdentityOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
+{
+    TM2_Operator tm_op;
+    memset(&tm_op, 0, sizeof(TM2_Operator));
+    SetTmOperator(&tm_op, TM2_OPTYPE_IDENTITY, TM2_NOT_SET);
+    return WriteTmObject(start_ptr, cur_pos, &tm_op, sizeof(TM2_Operator));
+}
 tm_uoffset_t SaveTmNMSOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op)
 {
     NMSParam* p = (dynamic_cast<NMS*>(op))->GetParam();
@@ -1981,6 +1989,8 @@ op_save_t SaveTmOpFunc(uint32_t op_type)
             return SaveTmSoftplusOp;
         case TM2_OPTYPE_RECIPROCAL:
             return SaveTmReciprocalOp;
+        case TM2_OPTYPE_IDENTITY:
+            return SaveTmIdentityOp;
         case TM2_OPTYPE_NMS:
             return SaveTmNMSOp;
         case TM2_OPTYPE_SPATIALTRANSFORMER:

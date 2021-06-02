@@ -1525,8 +1525,8 @@ static bool LoadOnnxGather(StaticGraph* graph, StaticNode* node, const onnx::Nod
             param.axis = attr.i();
         }
     }
-    int64_t* data = ( int64_t* )GetConstTensorBuffer(indices_tensor);
-    param.indices_num = *data;
+    //int64_t* data = ( int64_t* )GetConstTensorBuffer(indices_tensor);
+    param.indices_num = 256;
     param.is_onnx = true;
 
     StaticOp* op = CreateStaticOp(graph, "Gather");
@@ -2883,7 +2883,13 @@ static bool LoadOnnxReciprocal(StaticGraph* graph, StaticNode* node, const onnx:
 
     return true;
 }
+static bool LoadOnnxIdentity(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
+{
+    StaticOp* op = CreateStaticOp(graph, "Identity");
+    SetNodeOp(node, op);
 
+    return true;
+}
 static bool LoadOnnxResize(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
     StaticOp* op = CreateStaticOp(graph, "Interp");
@@ -3069,6 +3075,7 @@ bool OnnxSerializerRegisterOpLoader(void)
     p_onnx->RegisterOpLoadMethod("Sqrt", op_load_t(LoadOnnxSqrt));
     p_onnx->RegisterOpLoadMethod("Resize", op_load_t(LoadOnnxResize));
     p_onnx->RegisterOpLoadMethod("Reciprocal", op_load_t(LoadOnnxReciprocal));
+    p_onnx->RegisterOpLoadMethod("Identity", op_load_t(LoadOnnxIdentity));
     p_onnx->RegisterOpLoadMethod("InstanceNormalization", op_load_t(LoadOnnxInstanceNormalization));
 
     return true;
