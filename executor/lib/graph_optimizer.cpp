@@ -48,6 +48,7 @@ static void AddConstNodeToSubGraph(Subgraph* graph, Tensor* tensor, Node* fused_
 static bool GraphFusedFcBn(Graph* graph, GraphOptimizer* opt);
 static bool GraphFusedConvUnsqueeze(Graph* graph, GraphOptimizer* opt);
 static bool GraphFusedSigmoidMul(Graph* graph, GraphOptimizer* opt);
+static bool GraphFuseConvLeakyReLu(Graph* graph, GraphOptimizer* opt);
 
 static bool Weight_Bn(Subgraph* graph, Node* ConvNode, float* mean, float* var, float* gamma, float* beta, float eps,
                       float rescale_factor, Tensor* bias_tensor)
@@ -1142,6 +1143,11 @@ void GraphOptimizerManager::Init(void)
     opt->name = "SigMul";
     opt->optimizer = graph_opt_t(GraphFusedSigmoidMul);
     Add(opt->name, opt);
+
+    opt = new GraphOptimizer();
+    opt->name = "ConvLeakyReLu";
+    opt->optimizer = graph_opt_t(GraphFuseConvLeakyReLu);
+    Add(opt->name, opt);
 }
 
 static bool NodeInGraph(Node* node, Graph* graph)
@@ -1158,30 +1164,31 @@ static bool NodeInGraph(Node* node, Graph* graph)
 }
 
 /* the graph optimizer: conv_relu */
-static bool GraphFuseConvReLuCommon(Graph* graph, GraphOptimizer* opt, bool relu6)
+static bool GraphFuseConvReLuCommon(Graph* graph, GraphOptimizer* opt, int relu_type)
 {
     int node_number = graph->seq_nodes.size();
     std::vector<Subgraph*> orig_sub;
-
+    std::vector<int> LeakyFlag;
     for (int i = 0; i < node_number; i++)
     {
         Node* node = graph->seq_nodes[i];
         Operator* op = node->GetOp();
 
-        if (relu6)
+        if (relu_type == 0)
         {
             if (op->GetName() != "ReLu6")
                 continue;
         }
-        else
+        if ( relu_type == 1 || relu_type == 2)
         {
-            if (op->GetName() != "ReLu")
+            
+            if (op->GetName() != "ReLu"  )
                 continue;
-            if (op->GetName() == "ReLu" && dynamic_cast<ReLu*>(op)->GetParam()->negative_slope != 0.f)
-            {
-                continue;
-            }
         }
+        if( relu_type == 1 && dynamic_cast<ReLu*>(op)->GetParam()->negative_slope != 0){
+            continue;
+        }
+
         Tensor* input_tensor = node->GetInputTensor(0);
 
         Node* conv_node = input_tensor->producer->owner;
@@ -1218,7 +1225,7 @@ static bool GraphFuseConvReLuCommon(Graph* graph, GraphOptimizer* opt, bool relu
 
         orig_sub.push_back(sub);
     }
-
+    
     /* construct new node */
     for (unsigned int i = 0; i < orig_sub.size(); i++)
     {
@@ -1248,10 +1255,12 @@ static bool GraphFuseConvReLuCommon(Graph* graph, GraphOptimizer* opt, bool relu
 
         *fused_param = *orig_param;
 
-        if (relu6)
+        if (relu_type == 0)
             fused_param->activation = ActRELU6;
-        else
+        if (relu_type == 1)
             fused_param->activation = ActRELU;
+        if (relu_type == 2)
+            fused_param->activation = 2;
 
         Tensor* output_tensor = orig_output->GetOutputTensor(0);
         fused_node->AddOutputTensor(output_tensor);
@@ -1290,11 +1299,14 @@ static bool GraphFuseConvReLuCommon(Graph* graph, GraphOptimizer* opt, bool relu
 }
 static bool GraphFuseConvReLu(Graph* graph, GraphOptimizer* opt)
 {
-    return GraphFuseConvReLuCommon(graph, opt, false);
+    return GraphFuseConvReLuCommon(graph, opt, 1);
 }
 static bool GraphFuseConvReLu6(Graph* graph, GraphOptimizer* opt)
 {
-    return GraphFuseConvReLuCommon(graph, opt, true);
+    return GraphFuseConvReLuCommon(graph, opt, 0);
 }
-
+static bool GraphFuseConvLeakyReLu(Graph* graph, GraphOptimizer* opt)
+{
+    return GraphFuseConvReLuCommon(graph, opt, 2);
+}
 }    // namespace TEngine
