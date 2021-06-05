@@ -1516,7 +1516,8 @@ static bool LoadOnnxGather(StaticGraph* graph, StaticNode* node, const onnx::Nod
 {
     GatherParam param = any_cast<GatherParam>(OpManager::GetOpDefParam("Gather"));
     StaticTensor* indices_tensor = FindTensor(graph, onnx_node.input(1));
-
+    printf ("input_size: %d\n",onnx_node.input_size());
+    printf("gather_tensor_size: %d\n", indices_tensor->dims.size());
     for (int k = 0; k < onnx_node.attribute_size(); k++)
     {
         const onnx::AttributeProto& attr = onnx_node.attribute(k);
@@ -1525,8 +1526,11 @@ static bool LoadOnnxGather(StaticGraph* graph, StaticNode* node, const onnx::Nod
             param.axis = attr.i();
         }
     }
-    //int64_t* data = ( int64_t* )GetConstTensorBuffer(indices_tensor);
-    param.indices_num = 256;
+    if (indices_tensor->dims.size() != 0){
+        int64_t* data = ( int64_t* )GetConstTensorBuffer(indices_tensor);
+        param.indices_num = *data;
+    }
+    
     param.is_onnx = true;
 
     StaticOp* op = CreateStaticOp(graph, "Gather");
