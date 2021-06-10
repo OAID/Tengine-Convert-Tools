@@ -1705,6 +1705,8 @@ static bool LoadMxnetSpatialTransformer(StaticGraph* graph, StaticNode* node, co
             param.transform_type = -1;
     }
 
+    printf("%d %d \n", param.sampler_type, param.transform_type);
+
     StaticOp* op = CreateStaticOp(graph, "SpatialTransformer");
     SetOperatorParam(op, param);
     SetNodeOp(node, op);
