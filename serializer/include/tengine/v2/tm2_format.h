@@ -953,6 +953,7 @@ typedef struct
 typedef struct
 {
      tm_uoffset_t offset_v_shape;
+     int dim_num;
 }TM2_ExpandParam;
 
 typedef struct
