@@ -1577,6 +1577,7 @@ tm_uoffset_t SaveTmExpandOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operat
     else
         tm_param.offset_v_shape = TM2_NOT_SET;
 
+    tm_param.dim_num = p->dim_num;
     TM2_Operator tm_op;
     memset(&tm_op, 0, sizeof(TM2_Operator));
     SetTmOperator(&tm_op, TM2_OPTYPE_EXPAND, WriteTmObject(start_ptr, cur_pos, &tm_param, sizeof(TM2_ExpandParam)));

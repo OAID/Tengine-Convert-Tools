@@ -31,7 +31,7 @@ namespace TEngine {
 struct ExpandParam : public NamedParam
 {
     std::vector<int> shape;
-
+    int dim_num;
     DECLARE_PARSER_STRUCTURE(ExpandParam)
     {
         DECLARE_PARSER_ENTRY(shape);

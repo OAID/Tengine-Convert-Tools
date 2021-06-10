@@ -542,7 +542,12 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
         StaticTensor* new_tensor = nullptr;
         std::string onnx_tensor_name = input_name;
         if(node_name[tensor->name] != 0){
-            if(tensor->dims.size() == 0 || tensor->dims.size() == 1){
+            if(tensor->dims.size() == 1){
+                if(tensor->mem_size == 0){
+                    continue;
+                }
+            }
+            if(tensor->dims.size() == 0){
                 AddNodeInputTensor(node, tensor);
                 continue;
             }
@@ -1872,6 +1877,7 @@ static bool LoadOnnxExpand(StaticGraph* graph, StaticNode* node, const onnx::Nod
     StaticTensor* shape_tensor = FindTensor(graph, onnx_node.input(1));
     int size = shape_tensor->dims[0];
     int64_t* data = ( int64_t* )GetConstTensorBuffer(shape_tensor);
+    param.dim_num = size;
     for (int i = 0; i < size; i++)
     {
         param.shape.push_back(data[i]);
