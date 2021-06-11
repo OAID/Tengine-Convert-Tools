@@ -1514,7 +1514,7 @@ bool LoadTmExpandOp(StaticGraph* graph, StaticNode* node, void* const start_ptr,
         for(unsigned int i = 0; i < v_axises->v_num; i++)
             param.shape.push_back(v_axises->dims[i]);
     }
-
+    param.dim_num = tm_param->dim_num;
     StaticOp* op = CreateStaticOp(graph, op_str);
     SetOperatorParam(op, param);
     SetNodeOp(node, op);
