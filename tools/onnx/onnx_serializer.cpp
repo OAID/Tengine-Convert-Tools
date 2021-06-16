@@ -1253,7 +1253,7 @@ static bool LoadOnnxMul(StaticGraph* graph, StaticNode* node, const onnx::NodePr
 
     param.type = ELT_PROD;
 
-    for(int i = 0; i < onnx_node.input().size(); ++i)
+/*     for(int i = 0; i < onnx_node.input().size(); ++i)
     {
         StaticTensor* tensor = FindTensor(graph, onnx_node.input(i));
         std::vector<int> dims = tensor->dims;
@@ -1263,7 +1263,7 @@ static bool LoadOnnxMul(StaticGraph* graph, StaticNode* node, const onnx::NodePr
             new_dims.push_back(1);
             SetTensorDim(tensor, new_dims);
         }
-    }
+    } */
 
     StaticOp* op = CreateStaticOp(graph, "Eltwise");
 

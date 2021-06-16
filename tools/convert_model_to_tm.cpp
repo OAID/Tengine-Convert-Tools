@@ -199,6 +199,7 @@ int main(int argc, char* argv[])
             std::cout << "prerun failed\n";
             return -1;
         }
+        dump_graph(graph);
     }
 
     // Save the tengine model file
