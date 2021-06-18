@@ -1535,6 +1535,9 @@ static bool LoadOnnxGather(StaticGraph* graph, StaticNode* node, const onnx::Nod
         int64_t* data = ( int64_t* )GetConstTensorBuffer(indices_tensor);
         param.indices_num = *data;
     }
+    else {
+        param.indices_num = 0;
+    }
     
     param.is_onnx = true;
 
