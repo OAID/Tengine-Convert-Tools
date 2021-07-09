@@ -1421,7 +1421,8 @@ static bool LoadOnnxSlice(StaticGraph* graph, StaticNode* node, const onnx::Node
         param.begin = (int)(*(int64_t*)(GetConstTensorBuffer(node_tensor)));
 
         node_tensor = FindTensor(graph, onnx_node.input(2));
-        param.end = (int)(*(int64_t*)(GetConstTensorBuffer(node_tensor)));
+        int64_t end_ = *(int64_t*)(GetConstTensorBuffer(node_tensor));
+        param.end = end_ < INT_MAX ? (int)end_ : INT_MAX;
 
         if (onnx_node.input_size() >= 4)
         {
