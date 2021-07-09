@@ -552,10 +552,9 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
                 continue;
             }
             if (typeid(StaticTensor) == typeid(*tensor)) {
-                /* Note: StaticTensor has no member "mem_addr" */
-                LOG_WARN() << "[WARN] unexcepted runtime StaticTensor: " << tensor->name;
-                LOG_WARN() << ", tensor dims: " << tensor->dims.size();
-                LOG_WARN() << ", memory size: " << tensor->mem_size << "\n";
+                /* Add StaticTensor to node directly, since it has no member "mem_addr" */
+                AddNodeInputTensor(node, tensor);
+                node_name[tensor->name] = node_name[tensor->name] + 1;
                 continue;
             }
 
@@ -570,7 +569,7 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
                 tensor_size *= dims[t];
             }
             SetTensorDim(new_tensor, dims);
-            SetTensorDataType(new_tensor, DataType::GetTypeID("float32"));
+            SetTensorDataType(new_tensor, tensor->data_type);
             tensor_size = 4 * tensor_size;
             SetTensorSize(tensor, tensor_size);
             uint8_t* mem_buf = ( uint8_t* )std::malloc(tensor_size);
