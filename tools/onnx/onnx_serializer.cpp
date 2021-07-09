@@ -551,7 +551,14 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
                 AddNodeInputTensor(node, tensor);
                 continue;
             }
-            
+            if (typeid(StaticTensor) == typeid(*tensor)) {
+                /* Note: StaticTensor has no member "mem_addr" */
+                LOG_WARN() << "[WARN] unexcepted runtime StaticTensor: " << tensor->name;
+                LOG_WARN() << ", tensor dims: " << tensor->dims.size();
+                LOG_WARN() << ", memory size: " << tensor->mem_size << "\n";
+                continue;
+            }
+
             std::string new_tensor_name  = tensor->name + "_" + std::to_string(node_name[tensor->name]);
             new_tensor = CreateStaticConstTensor(graph, new_tensor_name);
             std::vector<int> dims = tensor->dims;
