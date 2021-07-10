@@ -607,8 +607,9 @@ void NcnnSerializer::CreateInputNode(StaticGraph* graph, const std::vector<NcnnN
         {
             // printf("Create input tensor %s \n",  ncnn_node.name.c_str());
             std::string input_name = ncnn_node.name;
-
-            StaticTensor* tensor = CreateStaticTensor(graph, input_name);
+	    
+            // Input should have one and only one output tensor.
+            StaticTensor* tensor = CreateStaticTensor(graph, ncnn_node.output_name[0]); 
 
             SetTensorDataType(tensor, DataType::GetTypeID("float32"));
 
