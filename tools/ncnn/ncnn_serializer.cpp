@@ -941,6 +941,11 @@ static void ParseAttr_n(const std::string str, std::vector<float>& result)
 {
     split(str, ',', result);
 }
+	
+static bool LoadNcnnInput(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
+{
+    return true;
+}
 
 static bool LoadNcnnSoftmax(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
 {
@@ -1764,6 +1769,7 @@ bool NcnnSerializerRegisterOpLoader(void)
         return false;
 
     NcnnSerializer* p_ncnn = dynamic_cast<NcnnSerializer*>(serializer.get());
+    p_ncnn->RegisterOpLoadMethod("Input", op_load_t(LoadNcnnInput));
     p_ncnn->RegisterOpLoadMethod("Convolution", op_load_t(LoadNcnnConvolution));
     p_ncnn->RegisterOpLoadMethod("ConvolutionDepthWise", op_load_t(LoadNcnnConvolution));
     p_ncnn->RegisterOpLoadMethod("Pooling", op_load_t(LoadNcnnPooling));
