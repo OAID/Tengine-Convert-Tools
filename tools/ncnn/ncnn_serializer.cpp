@@ -240,7 +240,6 @@ bool NcnnSerializer::LoadBinaryFile(const char* fname, std::vector<NcnnParam>& p
         else if (nodelist[i].op == "PReLU")
         {
             NcnnParam slope;
-            nscan = read(&magic, sizeof(float));
             slope.name = nodelist[i].name + "_s";
             std::map<int, std::string>::iterator iter;
             iter = nodelist[i].attrs.find(0);
@@ -985,6 +984,7 @@ static bool LoadNcnnConcat(StaticGraph* graph, StaticNode* node, const NcnnNode&
 
     return true;
 }
+	
 static bool LoadNcnnRelu(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
 {
     StaticOp* op = CreateStaticOp(graph, "ReLu");
@@ -1002,6 +1002,16 @@ static bool LoadNcnnRelu(StaticGraph* graph, StaticNode* node, const NcnnNode& n
 
     return true;
 }
+	
+static bool LoadNcnnPReLU(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
+{
+    StaticOp* op = CreateStaticOp(graph, "PReLU");
+
+    SetNodeOp(node, op);
+
+    return true;
+}
+	
 static bool LoadNcnnSplit(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
 {
     StaticOp* op = CreateStaticOp(graph, "Split");
@@ -1758,6 +1768,7 @@ bool NcnnSerializerRegisterOpLoader(void)
     p_ncnn->RegisterOpLoadMethod("ConvolutionDepthWise", op_load_t(LoadNcnnConvolution));
     p_ncnn->RegisterOpLoadMethod("Pooling", op_load_t(LoadNcnnPooling));
     p_ncnn->RegisterOpLoadMethod("ReLU", op_load_t(LoadNcnnRelu));
+    p_ncnn->RegisterOpLoadMethod("PReLU", op_load_t(LoadNcnnPReLU));
     p_ncnn->RegisterOpLoadMethod("Split", op_load_t(LoadNcnnSplit));
     p_ncnn->RegisterOpLoadMethod("Concat", op_load_t(LoadNcnnConcat));
     p_ncnn->RegisterOpLoadMethod("Softmax", op_load_t(LoadNcnnSoftmax));
