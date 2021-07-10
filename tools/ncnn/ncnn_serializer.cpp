@@ -240,7 +240,6 @@ bool NcnnSerializer::LoadBinaryFile(const char* fname, std::vector<NcnnParam>& p
         else if (nodelist[i].op == "PReLU")
         {
             NcnnParam slope;
-            nscan = read(&magic, sizeof(float));
             slope.name = nodelist[i].name + "_s";
             std::map<int, std::string>::iterator iter;
             iter = nodelist[i].attrs.find(0);
@@ -607,8 +606,9 @@ void NcnnSerializer::CreateInputNode(StaticGraph* graph, const std::vector<NcnnN
         {
             // printf("Create input tensor %s \n",  ncnn_node.name.c_str());
             std::string input_name = ncnn_node.name;
-
-            StaticTensor* tensor = CreateStaticTensor(graph, input_name);
+	    
+            // Input should have one and only one output tensor.
+            StaticTensor* tensor = CreateStaticTensor(graph, ncnn_node.output_name[0]); 
 
             SetTensorDataType(tensor, DataType::GetTypeID("float32"));
 
@@ -941,6 +941,11 @@ static void ParseAttr_n(const std::string str, std::vector<float>& result)
 {
     split(str, ',', result);
 }
+	
+static bool LoadNcnnInput(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
+{
+    return true;
+}
 
 static bool LoadNcnnSoftmax(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
 {
@@ -984,6 +989,7 @@ static bool LoadNcnnConcat(StaticGraph* graph, StaticNode* node, const NcnnNode&
 
     return true;
 }
+	
 static bool LoadNcnnRelu(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
 {
     StaticOp* op = CreateStaticOp(graph, "ReLu");
@@ -1001,6 +1007,16 @@ static bool LoadNcnnRelu(StaticGraph* graph, StaticNode* node, const NcnnNode& n
 
     return true;
 }
+	
+static bool LoadNcnnPReLU(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
+{
+    StaticOp* op = CreateStaticOp(graph, "PReLU");
+
+    SetNodeOp(node, op);
+
+    return true;
+}
+	
 static bool LoadNcnnSplit(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
 {
     StaticOp* op = CreateStaticOp(graph, "Split");
@@ -1753,10 +1769,12 @@ bool NcnnSerializerRegisterOpLoader(void)
         return false;
 
     NcnnSerializer* p_ncnn = dynamic_cast<NcnnSerializer*>(serializer.get());
+    p_ncnn->RegisterOpLoadMethod("Input", op_load_t(LoadNcnnInput));
     p_ncnn->RegisterOpLoadMethod("Convolution", op_load_t(LoadNcnnConvolution));
     p_ncnn->RegisterOpLoadMethod("ConvolutionDepthWise", op_load_t(LoadNcnnConvolution));
     p_ncnn->RegisterOpLoadMethod("Pooling", op_load_t(LoadNcnnPooling));
     p_ncnn->RegisterOpLoadMethod("ReLU", op_load_t(LoadNcnnRelu));
+    p_ncnn->RegisterOpLoadMethod("PReLU", op_load_t(LoadNcnnPReLU));
     p_ncnn->RegisterOpLoadMethod("Split", op_load_t(LoadNcnnSplit));
     p_ncnn->RegisterOpLoadMethod("Concat", op_load_t(LoadNcnnConcat));
     p_ncnn->RegisterOpLoadMethod("Softmax", op_load_t(LoadNcnnSoftmax));
