@@ -551,7 +551,13 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
                 AddNodeInputTensor(node, tensor);
                 continue;
             }
-            
+            if (typeid(StaticTensor) == typeid(*tensor)) {
+                /* Add StaticTensor to node directly, since it has no member "mem_addr" */
+                AddNodeInputTensor(node, tensor);
+                node_name[tensor->name] = node_name[tensor->name] + 1;
+                continue;
+            }
+
             std::string new_tensor_name  = tensor->name + "_" + std::to_string(node_name[tensor->name]);
             new_tensor = CreateStaticConstTensor(graph, new_tensor_name);
             std::vector<int> dims = tensor->dims;
@@ -563,7 +569,7 @@ bool OnnxSerializer::LoadNode(StaticGraph* graph, StaticNode* node, const onnx::
                 tensor_size *= dims[t];
             }
             SetTensorDim(new_tensor, dims);
-            SetTensorDataType(new_tensor, DataType::GetTypeID("float32"));
+            SetTensorDataType(new_tensor, tensor->data_type);
             tensor_size = 4 * tensor_size;
             SetTensorSize(tensor, tensor_size);
             uint8_t* mem_buf = ( uint8_t* )std::malloc(tensor_size);
@@ -1415,7 +1421,8 @@ static bool LoadOnnxSlice(StaticGraph* graph, StaticNode* node, const onnx::Node
         param.begin = (int)(*(int64_t*)(GetConstTensorBuffer(node_tensor)));
 
         node_tensor = FindTensor(graph, onnx_node.input(2));
-        param.end = (int)(*(int64_t*)(GetConstTensorBuffer(node_tensor)));
+        int64_t end_ = *(int64_t*)(GetConstTensorBuffer(node_tensor));
+        param.end = end_ < INT_MAX ? (int)end_ : INT_MAX;
 
         if (onnx_node.input_size() >= 4)
         {
