@@ -606,7 +606,7 @@ void NcnnSerializer::CreateInputNode(StaticGraph* graph, const std::vector<NcnnN
         {
             // printf("Create input tensor %s \n",  ncnn_node.name.c_str());
             std::string input_name = ncnn_node.name;
-	    
+
             // Input should have one and only one output tensor.
             StaticTensor* tensor = CreateStaticTensor(graph, ncnn_node.output_name[0]); 
 
@@ -1555,6 +1555,118 @@ static bool LoadNcnnEltwise(StaticGraph* graph, StaticNode* node, const NcnnNode
     return true;
 }
 
+static bool LoadNcnnBinaryOp(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
+{
+    EltwiseParam param = any_cast<EltwiseParam>(OpManager::GetOpDefParam("Eltwise"));
+    const_iterator iter;
+
+    std::vector<float> coef;
+
+    // ncnn type:
+    // Operation_ADD = 0,
+    // Operation_SUB = 1,
+    // Operation_MUL = 2,
+    // Operation_DIV = 3,
+    // Operation_MAX = 4,
+    // Operation_MIN = 5,
+    // Operation_POW = 6,
+    // Operation_RSUB = 7,
+    // Operation_RDIV = 8
+
+    param.caffe_flavor = 0;
+
+    int opType = -1;
+    int has_scale = 0;
+
+    iter = ncnn_node.attrs.find(0);
+    if (iter != ncnn_node.attrs.end())
+        opType = std::atoi(iter->second.c_str());
+
+    iter = ncnn_node.attrs.find(1);
+    if (iter != ncnn_node.attrs.end())
+    {
+        has_scale = std::atoi(iter->second.c_str());
+        if (0 != has_scale)
+        {
+            iter = ncnn_node.attrs.find(2);
+            if (iter != ncnn_node.attrs.end())
+            {
+                float scale = std::atof(iter->second.c_str());
+
+                std::vector<int> dims = { 1 };
+                StaticTensor* tensor = CreateStaticConstTensor(graph, ncnn_node.name + ".scale");
+                SetTensorDim(tensor, dims);
+
+                SetTensorDataType(tensor, DataType::GetTypeID("float32"));
+                SetTensorSize(tensor, 1);
+
+                float* mem_buf = ( float* )std::malloc(1 * sizeof(float));
+                /* load data */
+                *mem_buf = scale;
+
+                SetConstTensorBuffer(tensor, mem_buf);
+                SetConstTensorFileLocation(tensor, -1, 0);
+
+                StaticOp* op = CreateStaticOp(graph, "Const");
+                StaticNode* scale_node = CreateStaticNode(graph, GetTensorName(tensor));
+                SetNodeOp(scale_node, op);
+                AddNodeOutputTensor(scale_node, tensor);
+
+                AddNodeInputTensor(node, tensor);
+
+                printf("==== eltwise scale is %.4f\n", param.scale);
+            }
+        }
+    }
+
+    switch (opType)
+    {
+        case 0:
+        {
+            param.type = ELT_SUM;
+            break;
+        }
+        case 1:
+        {
+            param.type = ELT_SUB;
+            break;
+        }
+        case 2:
+        {
+            param.type = ELT_PROD;
+            break;
+        }
+        case 3:
+        {
+            param.type = ELT_DIV;
+            break;
+        }
+        case 4:
+        {
+            param.type = ELT_MAX;
+            break;
+        }
+        case 5:
+        {
+            param.type = ELT_MIN_SCALAR;
+            break;
+        }
+        case 6:
+        {
+            param.type = ELT_POWER;
+            break;
+        }
+    }
+
+    StaticOp* op = CreateStaticOp(graph, "Eltwise");
+
+    SetOperatorParam(op, param);
+
+    SetNodeOp(node, op);
+
+    return true;
+}
+
 static bool LoadNcnnInterp(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
 {
     InterpParam param = any_cast<InterpParam>(OpManager::GetOpDefParam("Interp"));
@@ -1791,7 +1903,7 @@ bool NcnnSerializerRegisterOpLoader(void)
     p_ncnn->RegisterOpLoadMethod("Eltwise", op_load_t(LoadNcnnEltwise));
     p_ncnn->RegisterOpLoadMethod("Interp", op_load_t(LoadNcnnInterp));
     p_ncnn->RegisterOpLoadMethod("Crop", op_load_t(LoadNcnnCrop));  
-    p_ncnn->RegisterOpLoadMethod("BinaryOp", op_load_t(LoadNcnnEltwise)); 
+    p_ncnn->RegisterOpLoadMethod("BinaryOp", op_load_t(LoadNcnnBinaryOp)); 
     p_ncnn->RegisterOpLoadMethod("Slice", op_load_t(LoadNcnnSlice));
     p_ncnn->RegisterOpLoadMethod("Noop", op_load_t(LoadNcnnNoop));
     p_ncnn->RegisterOpLoadMethod("Sigmoid", op_load_t(LoadNcnnSigmoid));
