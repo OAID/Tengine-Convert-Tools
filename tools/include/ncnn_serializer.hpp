@@ -104,6 +104,7 @@ protected:
     void CreateInputNode(StaticGraph* graph, const std::vector<NcnnNode>& nodelist,
                          const std::vector<NcnnParam>& paramlist);
     bool vstr_is_float(const char vstr[16]);
+    void remove_ncnn_split(std::vector<NcnnNode>& nodelist);
 
     int read(void* buf, int size);
 
