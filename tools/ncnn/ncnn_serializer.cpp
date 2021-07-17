@@ -75,6 +75,22 @@ bool NcnnSerializer::vstr_is_float(const char vstr[16])
 
     return false;
 }
+	
+void NcnnSerializer::remove_ncnn_split(std::vector<NcnnNode>& nodelist){
+    for(auto &node : nodelist){
+        if(node.op == "Split"){
+            for(auto &in_node : nodelist){
+                if(in_node.output_name[0] == node.inputs_name[0]){
+                    in_node.output_name.clear();
+                    for(auto &node_name : node.output_name){
+                        in_node.output_name.push_back(node_name);
+                    }
+                }
+            }
+        }
+    }
+    nodelist.erase(std::remove_if(nodelist.begin(), nodelist.end(), [&](NcnnNode& n){return n.op == "Split";}), nodelist.end());
+}
 
 int NcnnSerializer::read(void* buf, int size)
 {
@@ -525,6 +541,8 @@ bool NcnnSerializer::LoadTextFile(const char* fname, std::vector<NcnnNode>& node
 
         nodelist.push_back(node);
     }
+    
+    remove_ncnn_split(nodelist);
 
 #if 0
     std::string nodeName = nodelist[(int)nodelist.size()-1].name;
@@ -1012,17 +1030,6 @@ static bool LoadNcnnPReLU(StaticGraph* graph, StaticNode* node, const NcnnNode& 
 {
     StaticOp* op = CreateStaticOp(graph, "PReLU");
 
-    SetNodeOp(node, op);
-
-    return true;
-}
-	
-static bool LoadNcnnSplit(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
-{
-    StaticOp* op = CreateStaticOp(graph, "Split");
-    SplitParam param = any_cast<SplitParam>(OpManager::GetOpDefParam("Split"));
-    param.is_caffe = true;
-    SetOperatorParam(op, param);
     SetNodeOp(node, op);
 
     return true;
@@ -1887,7 +1894,6 @@ bool NcnnSerializerRegisterOpLoader(void)
     p_ncnn->RegisterOpLoadMethod("Pooling", op_load_t(LoadNcnnPooling));
     p_ncnn->RegisterOpLoadMethod("ReLU", op_load_t(LoadNcnnRelu));
     p_ncnn->RegisterOpLoadMethod("PReLU", op_load_t(LoadNcnnPReLU));
-    p_ncnn->RegisterOpLoadMethod("Split", op_load_t(LoadNcnnSplit));
     p_ncnn->RegisterOpLoadMethod("Concat", op_load_t(LoadNcnnConcat));
     p_ncnn->RegisterOpLoadMethod("Softmax", op_load_t(LoadNcnnSoftmax));
     p_ncnn->RegisterOpLoadMethod("Dropout", op_load_t(LoadNcnnDropout));
