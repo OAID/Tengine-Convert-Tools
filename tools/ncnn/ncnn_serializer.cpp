@@ -75,6 +75,33 @@ bool NcnnSerializer::vstr_is_float(const char vstr[16])
 
     return false;
 }
+	
+void NcnnSerializer::remove_ncnn_split(std::vector<NcnnNode>& nodelist){
+    for(auto &curr_node : nodelist){
+        if(curr_node.op == "Split"){
+            for(auto &in_node : nodelist){
+                if(in_node.output_name[0] == curr_node.inputs_name[0]){
+                    auto out_name = in_node.output_name[0];
+                    for(auto &out_node : nodelist){
+                        for(auto &out_node_inbound_name : out_node.inputs_name){
+                            for(auto &curr_node_outbound_name : curr_node.output_name){
+                                if(out_node_inbound_name == curr_node_outbound_name){
+                                    out_node.inputs_name.erase(std::remove(
+                                        out_node.inputs_name.begin(),
+                                        out_node.inputs_name.end(),
+                                        out_node_inbound_name
+                                    ), out_node.inputs_name.end());
+                                    out_node.inputs_name.push_back(in_node.output_name[0]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    nodelist.erase(std::remove_if(nodelist.begin(), nodelist.end(), [&](NcnnNode& n){return n.op == "Split";}), nodelist.end());
+}
 
 int NcnnSerializer::read(void* buf, int size)
 {
@@ -525,16 +552,25 @@ bool NcnnSerializer::LoadTextFile(const char* fname, std::vector<NcnnNode>& node
 
         nodelist.push_back(node);
     }
+    
+    remove_ncnn_split(nodelist);
 
 #if 0
-    std::string nodeName = nodelist[(int)nodelist.size()-1].name;
-    std::string nodeop = nodelist[(int)nodelist.size()-1].op;
-    std::map<int, std::string>::iterator iter;  
-    std::cout<<nodeName<<" "<<nodeop<<std::endl;
-    //for(iter = nodelist[(int)nodelist.size()].attrs.begin(); iter !=  nodelist[(int)nodelist.size()].attrs.end(); iter++)  
-    //   std::cout<<iter->first<<' '<<iter->second<<std::endl;
+    for(auto &node : nodelist){
+        printf("\nNode: %s, Op: %s.\n", node.name.c_str(), node.op.c_str());
 
+        printf("IN:\n");
+        for(auto &in_name : node.inputs_name){
+            printf("  %s\n", in_name.c_str());
+        }
+
+        printf("OUT:\n");
+        for(auto &out_name : node.output_name){
+            printf("  %s\n", out_name.c_str());
+        }
+    }
 #endif
+
     return true;
 }
 
@@ -1012,17 +1048,6 @@ static bool LoadNcnnPReLU(StaticGraph* graph, StaticNode* node, const NcnnNode& 
 {
     StaticOp* op = CreateStaticOp(graph, "PReLU");
 
-    SetNodeOp(node, op);
-
-    return true;
-}
-	
-static bool LoadNcnnSplit(StaticGraph* graph, StaticNode* node, const NcnnNode& ncnn_node)
-{
-    StaticOp* op = CreateStaticOp(graph, "Split");
-    SplitParam param = any_cast<SplitParam>(OpManager::GetOpDefParam("Split"));
-    param.is_caffe = true;
-    SetOperatorParam(op, param);
     SetNodeOp(node, op);
 
     return true;
@@ -1887,7 +1912,6 @@ bool NcnnSerializerRegisterOpLoader(void)
     p_ncnn->RegisterOpLoadMethod("Pooling", op_load_t(LoadNcnnPooling));
     p_ncnn->RegisterOpLoadMethod("ReLU", op_load_t(LoadNcnnRelu));
     p_ncnn->RegisterOpLoadMethod("PReLU", op_load_t(LoadNcnnPReLU));
-    p_ncnn->RegisterOpLoadMethod("Split", op_load_t(LoadNcnnSplit));
     p_ncnn->RegisterOpLoadMethod("Concat", op_load_t(LoadNcnnConcat));
     p_ncnn->RegisterOpLoadMethod("Softmax", op_load_t(LoadNcnnSoftmax));
     p_ncnn->RegisterOpLoadMethod("Dropout", op_load_t(LoadNcnnDropout));
