@@ -1259,7 +1259,7 @@ static bool LoadOnnxMul(StaticGraph* graph, StaticNode* node, const onnx::NodePr
 
     param.type = ELT_PROD;
 
-    for(int i = 0; i < onnx_node.input().size(); ++i)
+/*     for(int i = 0; i < onnx_node.input().size(); ++i)
     {
         StaticTensor* tensor = FindTensor(graph, onnx_node.input(i));
         std::vector<int> dims = tensor->dims;
@@ -1269,7 +1269,7 @@ static bool LoadOnnxMul(StaticGraph* graph, StaticNode* node, const onnx::NodePr
             new_dims.push_back(1);
             SetTensorDim(tensor, new_dims);
         }
-    }
+    } */
 
     StaticOp* op = CreateStaticOp(graph, "Eltwise");
 
@@ -1528,7 +1528,8 @@ static bool LoadOnnxGather(StaticGraph* graph, StaticNode* node, const onnx::Nod
 {
     GatherParam param = any_cast<GatherParam>(OpManager::GetOpDefParam("Gather"));
     StaticTensor* indices_tensor = FindTensor(graph, onnx_node.input(1));
-
+    printf ("input_size: %d\n",onnx_node.input_size());
+    printf("gather_tensor_size: %d\n", indices_tensor->dims.size());
     for (int k = 0; k < onnx_node.attribute_size(); k++)
     {
         const onnx::AttributeProto& attr = onnx_node.attribute(k);
@@ -1537,8 +1538,14 @@ static bool LoadOnnxGather(StaticGraph* graph, StaticNode* node, const onnx::Nod
             param.axis = attr.i();
         }
     }
-    int64_t* data = ( int64_t* )GetConstTensorBuffer(indices_tensor);
-    param.indices_num = *data;
+    if (indices_tensor->dims.size() != 0){
+        int64_t* data = ( int64_t* )GetConstTensorBuffer(indices_tensor);
+        param.indices_num = *data;
+    }
+    else {
+        param.indices_num = 0;
+    }
+    
     param.is_onnx = true;
 
     StaticOp* op = CreateStaticOp(graph, "Gather");
@@ -2898,7 +2905,13 @@ static bool LoadOnnxReciprocal(StaticGraph* graph, StaticNode* node, const onnx:
 
     return true;
 }
+static bool LoadOnnxIdentity(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
+{
+    StaticOp* op = CreateStaticOp(graph, "Identity");
+    SetNodeOp(node, op);
 
+    return true;
+}
 static bool LoadOnnxResize(StaticGraph* graph, StaticNode* node, const onnx::NodeProto& onnx_node)
 {
     StaticOp* op = CreateStaticOp(graph, "Interp");
@@ -3084,6 +3097,7 @@ bool OnnxSerializerRegisterOpLoader(void)
     p_onnx->RegisterOpLoadMethod("Sqrt", op_load_t(LoadOnnxSqrt));
     p_onnx->RegisterOpLoadMethod("Resize", op_load_t(LoadOnnxResize));
     p_onnx->RegisterOpLoadMethod("Reciprocal", op_load_t(LoadOnnxReciprocal));
+    p_onnx->RegisterOpLoadMethod("Identity", op_load_t(LoadOnnxIdentity));
     p_onnx->RegisterOpLoadMethod("InstanceNormalization", op_load_t(LoadOnnxInstanceNormalization));
 
     return true;

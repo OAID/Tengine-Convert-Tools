@@ -1659,6 +1659,13 @@ bool LoadTmReciprocalOp(StaticGraph* graph, StaticNode* node, void* const start_
     SetNodeOp(node, op);
     return true;
 }
+bool LoadTmIdentityOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
+{
+    StaticOp* op = CreateStaticOp(graph, TM2_OPSTR_IDENTITY);
+    SetNodeOp(node, op);
+    return true;
+}
+
 bool LoadTmNMSOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op)
 {
     const std::string& op_str = TM2_OPSTR_NMS;
@@ -1910,6 +1917,8 @@ op_load_t LoadTmOpFunc(uint32_t op_type)
             return LoadTmSoftplusOp;
         case TM2_OPTYPE_RECIPROCAL:
             return LoadTmReciprocalOp;
+        case TM2_OPTYPE_IDENTITY:
+            return LoadTmIdentityOp;    
         case TM2_OPTYPE_NMS:
             return LoadTmNMSOp;
         case TM2_OPTYPE_SPATIALTRANSFORMER:
@@ -2146,6 +2155,8 @@ std::string GetOpStr(uint32_t op_type)
             return std::string(TM2_OPSTR_SOFTPLUS);
         case TM2_OPTYPE_RECIPROCAL:
             return std::string(TM2_OPSTR_RECIPROCAL);
+        case TM2_OPTYPE_IDENTITY:
+            return std::string(TM2_OPSTR_IDENTITY);
         case TM2_OPTYPE_NMS:
             return std::string(TM2_OPSTR_NMS);
         case TM2_OPTYPE_SPATIALTRANSFORMER:

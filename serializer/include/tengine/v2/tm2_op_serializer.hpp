@@ -122,6 +122,7 @@
 #include "operator/relu1.hpp"
 #include "operator/softplus.hpp"
 #include "operator/reciprocal.hpp"
+#include "operator/identity.hpp"
 #include "operator/nms.hpp"
 #include "operator/spatialtransformer.hpp"
 
@@ -317,6 +318,7 @@ bool LoadTmLogSoftmaxOp(StaticGraph* graph, StaticNode* node, void* const start_
 bool LoadTmReLU1Op(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 bool LoadTmSoftplusOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 bool LoadTmReciprocalOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
+bool LoadTmIdentityOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 bool LoadTmNMSOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 bool LoadTmSpatialTransformerOp(StaticGraph* graph, StaticNode* node, void* const start_ptr, const TM2_Operator* tm_op);
 
@@ -424,6 +426,7 @@ tm_uoffset_t SaveTmLogSoftmaxOp(void* const start_ptr, tm_uoffset_t* cur_pos, Op
 tm_uoffset_t SaveTmReLU1Op(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 tm_uoffset_t SaveTmSoftplusOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 tm_uoffset_t SaveTmReciprocalOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
+tm_uoffset_t SaveTmIdentityOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 tm_uoffset_t SaveTmNMSop(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 tm_uoffset_t SaveTmSpatialTransformerOp(void* const start_ptr, tm_uoffset_t* cur_pos, Operator* op);
 

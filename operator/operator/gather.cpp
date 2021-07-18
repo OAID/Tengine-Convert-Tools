@@ -8,14 +8,26 @@ namespace TEngine {
 bool Gather::InferShape(const std::vector<TShape>& ishape, std::vector<TShape>& oshape, int layout)
 {
     const TShape& input = ishape[0];
-    std::vector<int> input_dim = input.GetDim();
-    std::vector<int> output_dim;
+    const TShape& input2 = ishape[1];
 
+    std::vector<int> input_dim = input.GetDim();
+    std::vector<int> input_dim2 = input2.GetDim();
+    std::vector<int> output_dim;
+    printf ("input2_num: %d\n", input_dim2[0]);
     if (param_.axis > ( int )input_dim.size())
     {
         return false;
     }
-    int indices_size = param_.indices_num;
+    int indices_size;
+    if (param_.indices_num != 0){
+
+        indices_size = param_.indices_num;
+
+    }
+    else {
+        indices_size = input_dim2[0];
+    }
+    
     /*
     printf("gather input dims: ");
     for(int i =0; i<(int)input_dim.size(); i++){

@@ -40,18 +40,44 @@ bool Eltwise::InferShape(const std::vector<TShape>& ishape, std::vector<TShape>&
         return false;
     }
 
-    int i0_size = ishape[0].GetSize();
-    int i1_size = ishape[1].GetSize();
+    TShape input_shape0 = ishape[0];
+    TShape input_shape1 = ishape[1];
+    auto& dim0 = input_shape0.GetDim();
+    auto& dim1 = input_shape1.GetDim();
 
-    if (i0_size >= i1_size)
+    int dim_num = dim0.size() >= dim1.size() ? dim0.size():dim1.size();
+    std::vector<int> out_dims;
+    if (dim0.size() >= dim1.size()){
+        for (int i=0; i<dim0.size()-dim1.size();i++){
+            out_dims.push_back(dim0[i]);
+        }
+        for (int i=0; i<dim1.size();i++){
+            out_dims.push_back(dim0[dim0.size()-dim1.size()+i] >= dim1[i] ? dim0[dim0.size()-dim1.size()+i] : dim1[i]);
+        }
+ 
+    }
+    else{
+        for (int i=0; i<dim1.size()-dim0.size();i++){
+            out_dims.push_back(dim1[i]);
+        }
+        for (int i=0; i<dim0.size();i++){
+            out_dims.push_back(dim1[dim1.size()-dim0.size()+i] >= dim0[i] ? dim1[dim1.size()-dim0.size()+i] : dim0[i]);
+        }
+    }
+
+/*     if (i0_size >= i1_size)
     {
         oshape[0] = ishape[0];
     }
     else if (i0_size < i1_size)
     {
         oshape[0] = ishape[1];
-    }
+    } */
+    TShape shape;
+    shape.SetDim(out_dims);
+    shape.SetDataLayout(layout);
 
+    oshape[0] = shape;
     return true;
 }
 
